@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Review SMS Sender</title>
+  <style>
+    body {
+      font-family: Arial;
+      display: flex;
+      justify-content: center;
+      margin-top: 100px;
+    }
+
+    .box {
+      width: 300px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1e4fd6;
+    }
+
+    #status {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <h3>Send Review SMS</h3>
+
+    <input id="name" placeholder="Client Name" />
+    <input id="phone" placeholder="Phone (+614...)" />
+
+    <button onclick="sendSMS()">Send SMS</button>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+  async function sendSMS() {
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+
+    const status = document.getElementById("status");
+
+    status.innerText = "Sending...";
+
+    try {
+      const res = await fetch("http://localhost:3000/send-sms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          businessSlug: "test-plumbing" // 🔥 THIS IS THE FIX
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        status.innerText = "✅ SMS sent!";
+      } else {
+        status.innerText = "❌ Failed: " + JSON.stringify(data.error);
+      }
+
+    } catch (err) {
+      console.log("FETCH ERROR:", err);
+      status.innerText = "❌ Cannot connect to server";
+    }
+  }
+  </script>
+
+</body>
+</html>

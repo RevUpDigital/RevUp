@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leave Feedback</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f9fafb;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .good {
+      background: #22c55e;
+      color: white;
+    }
+
+    .bad {
+      background: #ef4444;
+      color: white;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2 id="title">Loading...</h2>
+
+  <button class="btn good" onclick="goodReview()">😊 Good</button>
+  <button class="btn bad" onclick="badReview()">😡 Bad</button>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const businessSlug = params.get("business");
+const customerName = params.get("name") || "there";
+
+let businessData = null;
+
+async function loadBusiness() {
+  if (!businessSlug) {
+    document.querySelector(".card").innerHTML = `
+      <h2>Missing business link</h2>
+      <p>This review link is missing a business name.</p>
+    `;
+    return;
+  }
+
+  try {
+    const res = await fetch(`/business/${businessSlug}`);
+    const business = await res.json();
+
+    if (!res.ok) {
+      document.querySelector(".card").innerHTML = `
+        <h2>Business not found</h2>
+        <p>Please check the review link and try again.</p>
+      `;
+      return;
+    }
+
+    businessData = business;
+
+    document.getElementById("title").innerText =
+      `Hi ${customerName}, how was your experience with ${business.businessName}?`;
+
+  } catch (err) {
+    console.log("LOAD BUSINESS ERROR:", err);
+
+    document.querySelector(".card").innerHTML = `
+      <h2>Something went wrong</h2>
+      <p>Could not load this review page.</p>
+    `;
+  }
+}
+
+function goodReview() {
+  if (!businessData) {
+    alert("Business is still loading. Please try again.");
+    return;
+  }
+
+  window.location.href = businessData.googleReviewLink;
+}
+
+function badReview() {
+  const heading = businessData?.feedbackHeading || "We're sorry to hear that";
+
+  document.querySelector(".card").innerHTML = `
+    <h2>${heading}</h2>
+    <p>Please tell us what went wrong:</p>
+    <textarea id="feedback" rows="4"></textarea><br><br>
+    <button class="btn bad" onclick="submitFeedback()">Submit</button>
+  `;
+}
+
+async function submitFeedback() {
+  const feedback = document.getElementById("feedback").value;
+
+  if (!feedback.trim()) {
+    alert("Please enter your feedback.");
+    return;
+  }
+
+  try {
+    const res = await fetch("/save-feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        businessSlug: businessSlug,
+        name: customerName,
+        feedback: feedback
+      })
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      document.querySelector(".card").innerHTML =
+        "<h2>Thanks for your feedback 🙏</h2>";
+    } else {
+      alert("Something went wrong saving your feedback.");
+    }
+
+  } catch (err) {
+    console.log("SUBMIT FEEDBACK ERROR:", err);
+    alert("Could not submit feedback.");
+  }
+}
+
+loadBusiness();
+</script>
+
+</body>
+</html>

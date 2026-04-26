@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RevUp Business Signup</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      padding-top: 60px;
+    }
+
+    .box {
+      background: white;
+      width: 420px;
+      padding: 30px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .result {
+      margin-top: 20px;
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 10px;
+      word-break: break-all;
+      display: none;
+    }
+
+    .error {
+      color: #dc2626;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>RevUp Business Signup</h2>
+  <p>Create a business profile for review SMS links.</p>
+
+  <input id="businessName" placeholder="Business Name" />
+  <input id="email" placeholder="Business Email" />
+  <input id="googleReviewLink" placeholder="Google Review Link" />
+
+  <textarea id="smsMessage" placeholder="SMS Message">Hi {{name}}, thanks for choosing us. Please leave a review: {{reviewLink}}</textarea>
+
+  <input id="feedbackHeading" placeholder="Feedback Heading" value="We're sorry to hear that" />
+
+  <button onclick="createBusiness()">Create Business</button>
+
+  <div id="error" class="error"></div>
+
+  <div id="result" class="result"></div>
+</div>
+
+<script>
+function createSlug(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+async function createBusiness() {
+  const businessName = document.getElementById("businessName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const googleReviewLink = document.getElementById("googleReviewLink").value.trim();
+  const smsMessage = document.getElementById("smsMessage").value.trim();
+  const feedbackHeading = document.getElementById("feedbackHeading").value.trim();
+
+  const error = document.getElementById("error");
+  const result = document.getElementById("result");
+
+  error.innerText = "";
+  result.style.display = "none";
+
+  if (!businessName || !email || !googleReviewLink || !smsMessage) {
+    error.innerText = "Please fill in all required fields.";
+    return;
+  }
+
+  const slug = createSlug(businessName);
+
+  try {
+    const res = await fetch("/create-business", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        businessName,
+        slug,
+        email,
+        googleReviewLink,
+        smsMessage,
+        feedbackHeading
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      error.innerText = data.error || "Could not create business.";
+      return;
+    }
+
+    const reviewLink = `${window.location.origin}/review.html?business=${slug}&name=John`;
+    const dashboardLink = `${window.location.origin}/dashboard.html?business=${slug}`;
+
+    result.style.display = "block";
+    result.innerHTML = `
+      <strong>Business created successfully ✅</strong><br><br>
+      <strong>Business Slug:</strong><br>
+      ${slug}<br><br>
+
+      <strong>Test Review Link:</strong><br>
+      <a href="${reviewLink}" target="_blank">${reviewLink}</a><br><br>
+
+      <strong>Dashboard Link:</strong><br>
+      <a href="${dashboardLink}" target="_blank">${dashboardLink}</a><br><br>
+
+      <strong>Next:</strong> Use this slug when sending SMS.
+    `;
+
+  } catch (err) {
+    console.log("CREATE BUSINESS ERROR:", err);
+    error.innerText = "Could not connect to server.";
+  }
+}
+</script>
+
+</body>
+</html>
