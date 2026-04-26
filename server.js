@@ -117,10 +117,10 @@ app.post("/send-sms", async (req, res) => {
       });
     }
 
-    const reviewLink = `https://gossip-battered-delirious.ngrok-free.dev/review.html?business=${encodeURIComponent(
+    const reviewLink = `https://revup-26cu.onrender.com/review.html?business=${encodeURIComponent(
       business.slug
     )}&name=${encodeURIComponent(name)}`;
-
+    
     const message = business.smsMessage
       .replaceAll("{{name}}", name)
       .replaceAll("{{reviewLink}}", reviewLink);
