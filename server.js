@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const path = require("path");
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -11,7 +12,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname)));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 mongoose
   .connect(process.env.MONGODB_URI, { dbName: "revup" })
@@ -120,7 +125,7 @@ app.post("/send-sms", async (req, res) => {
     const reviewLink = `https://revup-26cu.onrender.com/review.html?business=${encodeURIComponent(
       business.slug
     )}&name=${encodeURIComponent(name)}`;
-    
+
     const message = business.smsMessage
       .replaceAll("{{name}}", name)
       .replaceAll("{{reviewLink}}", reviewLink);
