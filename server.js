@@ -14,20 +14,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 app.use(express.json());
 app.use(cors());
 
-const fs = require("fs");
-
-app.get("/health", (req, res) => {
-  res.json({
-    ok: true,
-    cwd: process.cwd(),
-    dirname: __dirname,
-    publicExists: fs.existsSync(path.join(__dirname, "public")),
-    publicFiles: fs.existsSync(path.join(__dirname, "public"))
-      ? fs.readdirSync(path.join(__dirname, "public"))
-      : [],
-  });
-});
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
@@ -134,7 +120,7 @@ app.post("/send-sms", async (req, res) => {
       });
     }
 
-    const reviewLink = `https://revup-26cu.onrender.com/review.html?business=${encodeURIComponent(
+    const reviewLink = `https://revup-z6cu.onrender.com/review.html?business=${encodeURIComponent(
       business.slug
     )}&name=${encodeURIComponent(name)}`;
 
