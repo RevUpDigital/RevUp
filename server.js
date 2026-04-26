@@ -14,25 +14,10 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 app.use(express.json());
 app.use(cors());
 
-// ✅ FIXED STATIC HANDLING
-app.use(express.static(process.cwd()));
+app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ REMOVE duplicate "/" route and use THIS only
 app.get("/", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "index.html"));
-});
-
-// ✅ EXPLICIT ROUTES (this is what you were missing)
-app.get("/signup.html", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "signup.html"));
-});
-
-app.get("/review.html", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "review.html"));
-});
-
-app.get("/dashboard.html", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "dashboard.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 mongoose
