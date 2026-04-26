@@ -13,10 +13,26 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(process.cwd())));
 
+// ✅ FIXED STATIC HANDLING
+app.use(express.static(process.cwd()));
+
+// ✅ REMOVE duplicate "/" route and use THIS only
 app.get("/", (req, res) => {
   res.sendFile(path.join(process.cwd(), "index.html"));
+});
+
+// ✅ EXPLICIT ROUTES (this is what you were missing)
+app.get("/signup.html", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "signup.html"));
+});
+
+app.get("/review.html", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "review.html"));
+});
+
+app.get("/dashboard.html", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "dashboard.html"));
 });
 
 mongoose
@@ -54,10 +70,6 @@ const feedbackSchema = new mongoose.Schema({
 });
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
-
-app.get("/", (req, res) => {
-  res.send("Server is running 🚀");
-});
 
 app.post("/create-business", async (req, res) => {
   try {
