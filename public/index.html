@@ -4,23 +4,37 @@
   <title>Review SMS Sender</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
       display: flex;
       justify-content: center;
       margin-top: 100px;
     }
 
     .box {
-      width: 300px;
-      padding: 20px;
+      width: 340px;
+      background: white;
+      padding: 25px;
       border: 1px solid #ddd;
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    h3 {
+      margin-top: 0;
     }
 
     input, button {
       width: 100%;
-      padding: 10px;
+      padding: 11px;
       margin-top: 10px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    input {
+      border: 1px solid #ccc;
     }
 
     button {
@@ -28,6 +42,7 @@
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
     }
 
     button:hover {
@@ -35,18 +50,30 @@
     }
 
     #status {
-      margin-top: 10px;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      line-height: 1.4;
     }
   </style>
 </head>
 
 <body>
-
   <div class="box">
     <h3>Send Review SMS</h3>
 
     <input id="name" placeholder="Client Name" />
-    <input id="phone" placeholder="Phone (+614...)" />
+    <input id="phone" placeholder="Phone e.g. +61412345678" />
+    <input id="businessSlug" placeholder="Business Slug e.g. test-plumbing" />
+
+    <div class="hint">
+      Use the business slug created on the signup page.
+    </div>
 
     <button onclick="sendSMS()">Send SMS</button>
 
@@ -54,41 +81,46 @@
   </div>
 
   <script>
-  async function sendSMS() {
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
+    async function sendSMS() {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const businessSlug = document.getElementById("businessSlug").value.trim();
 
-    const status = document.getElementById("status");
+      const status = document.getElementById("status");
 
-    status.innerText = "Sending...";
-
-    try {
-      const res = await fetch("http://localhost:3000/send-sms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name,
-          phone,
-          businessSlug: "test-plumbing" // 🔥 THIS IS THE FIX
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        status.innerText = "✅ SMS sent!";
-      } else {
-        status.innerText = "❌ Failed: " + JSON.stringify(data.error);
+      if (!name || !phone || !businessSlug) {
+        status.innerText = "❌ Please fill in all fields.";
+        return;
       }
 
-    } catch (err) {
-      console.log("FETCH ERROR:", err);
-      status.innerText = "❌ Cannot connect to server";
-    }
-  }
-  </script>
+      status.innerText = "Sending...";
 
+      try {
+        const res = await fetch("/send-sms", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name,
+            phone,
+            businessSlug
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          status.innerText = "✅ SMS sent!";
+        } else {
+          status.innerText = "❌ Failed: " + JSON.stringify(data.error);
+        }
+
+      } catch (err) {
+        console.log("FETCH ERROR:", err);
+        status.innerText = "❌ Cannot connect to server.";
+      }
+    }
+  </script>
 </body>
 </html>
