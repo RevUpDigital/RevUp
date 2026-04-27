@@ -15,11 +15,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 app.use(express.json());
 app.use(cors());
 
-app.use(express.static(path.join(__dirname, "public")));
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "home.html"));
 });
+
+app.use(express.static(path.join(__dirname, "public")));
 
 mongoose
   .connect(process.env.MONGODB_URI, { dbName: "revup" })
