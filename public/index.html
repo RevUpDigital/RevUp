@@ -1,40 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Review SMS Sender</title>
+  <title>RevUp - Send Review SMS</title>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
-      margin-top: 100px;
+      align-items: center;
+      padding-top: 80px;
+      box-sizing: border-box;
+    }
+
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 40px;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+
+    .logo {
+      font-weight: bold;
+      color: #2563eb;
+      font-size: 20px;
+    }
+
+    .nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #334155;
+      font-weight: 500;
+    }
+
+    .nav a:hover {
+      color: #2563eb;
     }
 
     .box {
-      width: 340px;
+      width: 390px;
       background: white;
-      padding: 25px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      padding: 28px;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     }
 
     h3 {
       margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 18px;
     }
 
     input, button {
       width: 100%;
-      padding: 11px;
+      padding: 12px;
       margin-top: 10px;
       box-sizing: border-box;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 14px;
     }
 
     input {
-      border: 1px solid #ccc;
+      border: 1px solid #e2e8f0;
     }
 
     button {
@@ -42,28 +90,50 @@
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 700;
     }
 
     button:hover {
-      background: #1e4fd6;
+      background: #1d4ed8;
+    }
+
+    .secondary {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .secondary:hover {
+      background: #e2e8f0;
     }
 
     #status {
       margin-top: 14px;
       font-size: 14px;
+      color: #334155;
     }
   </style>
 </head>
 
 <body>
+  <div class="nav">
+    <div class="logo">RevUp 🚀</div>
+    <div>
+      <a href="/">Home</a>
+      <a href="/signup.html">Signup</a>
+      <a href="#" onclick="goToDashboard()">Dashboard</a>
+    </div>
+  </div>
+
   <div class="box">
     <h3>Send Review SMS</h3>
+    <div class="subtitle" id="businessSubtitle">Loading business...</div>
 
-    <input id="name" placeholder="Client Name" />
+    <input id="name" placeholder="Customer Name" />
     <input id="phone" placeholder="Phone e.g. +61412345678" />
         
     <button onclick="sendSMS()">Send SMS</button>
+    <button class="secondary" onclick="goToDashboard()">View Dashboard</button>
+    <button class="secondary" onclick="switchBusiness()">Switch Business</button>
 
     <div id="status"></div>
   </div>
@@ -73,33 +143,36 @@
 
     let businessSlug = params.get("business");
 
-    // fallback to saved business
     if (!businessSlug) {
       businessSlug = localStorage.getItem("businessSlug");
     }
 
-    // if still no business → go to signup
     if (!businessSlug) {
       window.location.href = "/signup.html";
     }
 
     async function loadBusiness() {
       const status = document.getElementById("status");
+      const businessSubtitle = document.getElementById("businessSubtitle");
 
       try {
         const res = await fetch(`/business/${businessSlug}`);
         const business = await res.json();
 
         if (!res.ok) {
-          status.innerText = "❌ Business not found.";
+          businessSubtitle.innerText = "Business not found.";
+          status.innerText = "❌ Business not found. Please switch business.";
           return;
         }
 
-        document.querySelector("h3").innerText =
-          `Send Review SMS - ${business.businessName}`;
+        localStorage.setItem("businessSlug", businessSlug);
+
+        document.querySelector("h3").innerText = "Send Review SMS";
+        businessSubtitle.innerText = `Sending as ${business.businessName}`;
 
       } catch (err) {
         console.log("LOAD BUSINESS ERROR:", err);
+        businessSubtitle.innerText = "Could not load business.";
         status.innerText = "❌ Could not load business.";
       }
     }
@@ -110,11 +183,11 @@
       const status = document.getElementById("status");
 
       if (!name || !phone) {
-        status.innerText = "❌ Please enter client name and phone.";
+        status.innerText = "❌ Please enter customer name and phone.";
         return;
       }
 
-      status.innerText = "Sending...";
+      status.innerText = "Sending SMS...";
 
       try {
         const res = await fetch("/send-sms", {
@@ -132,7 +205,9 @@
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = "✅ SMS sent!";
+          status.innerText = "✅ SMS sent successfully.";
+          document.getElementById("name").value = "";
+          document.getElementById("phone").value = "";
         } else {
           status.innerText = "❌ Failed: " + JSON.stringify(data.error);
         }
@@ -141,6 +216,15 @@
         console.log("FETCH ERROR:", err);
         status.innerText = "❌ Cannot connect to server.";
       }
+    }
+
+    function goToDashboard() {
+      window.location.href = `/dashboard.html?business=${businessSlug}`;
+    }
+
+    function switchBusiness() {
+      localStorage.removeItem("businessSlug");
+      window.location.href = "/signup.html";
     }
 
     loadBusiness();
