@@ -136,8 +136,12 @@ async function createBusiness() {
     const data = await res.json();
 
     if (!data.success) {
-      error.innerText = data.error || "Could not create business.";
-      return;
+      if (data.error && data.error.includes("duplicate")) {
+        error.innerText = "❌ A business with this name already exists. Try a different name.";
+      } else {
+        error.innerText = data.error || "Could not create business.";
+      }
+      return; // 🚨 THIS IS THE FIX
     }
 
     const reviewLink = `${window.location.origin}/review.html?business=${slug}&name=John`;
