@@ -1,89 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>RevUp Business Signup</title>
+  <title>RevUp - Create Your Business</title>
+
   <style>
     body {
-      font-family: Arial;
-      background: #f4f6f8;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
       display: flex;
       justify-content: center;
-      padding-top: 60px;
+      align-items: center;
+      height: 100vh;
     }
 
-    .box {
-      background: white;
+    .card {
       width: 420px;
+      background: white;
       padding: 30px;
-      border-radius: 14px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 10px;
     }
 
     h2 {
-      margin-top: 0;
+      margin: 0 0 10px;
     }
 
-    input, textarea, button {
+    p {
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    input, textarea {
       width: 100%;
       padding: 12px;
-      margin-top: 12px;
+      margin-top: 10px;
       border-radius: 8px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+      border: 1px solid #e2e8f0;
       font-size: 14px;
     }
 
     textarea {
-      min-height: 90px;
-      resize: vertical;
+      min-height: 80px;
     }
 
     button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
       background: #2563eb;
       color: white;
       border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 16px;
     }
 
     button:hover {
       background: #1d4ed8;
     }
 
-    .result {
-      margin-top: 20px;
-      background: #f9fafb;
-      padding: 15px;
-      border-radius: 10px;
-      word-break: break-all;
-      display: none;
+    .error {
+      color: #ef4444;
+      margin-top: 12px;
+      font-size: 14px;
     }
 
-    .error {
-      color: #dc2626;
-      margin-top: 12px;
+    .result {
+      margin-top: 15px;
+      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>RevUp Business Signup</h2>
-  <p>Create a business profile for review SMS links.</p>
+<div class="card">
+  <div class="logo">RevUp 🚀</div>
+  <h2>Create your business</h2>
+  <p>Start collecting reviews automatically.</p>
 
   <input id="businessName" placeholder="Business Name" />
   <input id="email" placeholder="Business Email" />
   <input id="googleReviewLink" placeholder="Google Review Link" />
 
-  <textarea id="smsMessage" placeholder="SMS Message">Hi {{name}}, thanks for choosing us. Please leave a review: {{reviewLink}}</textarea>
+  <textarea id="smsMessage">Hi {{name}}, thanks for choosing us. Please leave a review: {{reviewLink}}</textarea>
 
-  <input id="feedbackHeading" placeholder="Feedback Heading" value="We're sorry to hear that" />
+  <input id="feedbackHeading" value="We're sorry to hear that" />
 
   <button onclick="createBusiness()">Create Business</button>
 
   <div id="error" class="error"></div>
-
   <div id="result" class="result"></div>
 </div>
 
@@ -108,10 +124,10 @@ async function createBusiness() {
   const result = document.getElementById("result");
 
   error.innerText = "";
-  result.style.display = "none";
+  result.innerText = "";
 
   if (!businessName || !email || !googleReviewLink || !smsMessage) {
-    error.innerText = "Please fill in all required fields.";
+    error.innerText = "Please fill in all fields.";
     return;
   }
 
@@ -136,29 +152,23 @@ async function createBusiness() {
     const data = await res.json();
 
     if (!data.success) {
-      if (data.error && data.error.includes("duplicate")) {
-        error.innerText = "❌ A business with this name already exists. Try a different name.";
+      if (data.error === "duplicate") {
+        error.innerText = "❌ Business already exists. Try another name.";
       } else {
-        error.innerText = data.error || "Could not create business.";
+        error.innerText = data.error || "Something went wrong.";
       }
-      return; // 🚨 THIS IS THE FIX
+      return;
     }
 
-    const reviewLink = `${window.location.origin}/review.html?business=${slug}&name=John`;
-    const dashboardLink = `${window.location.origin}/dashboard.html?business=${slug}`;
-    const senderLink = `${window.location.origin}/index.html?business=${slug}`;
-
-    result.style.display = "block";
-    result.innerHTML = "<strong>Business created ✅ Redirecting...</strong>";
+    result.innerText = "✅ Creating your dashboard...";
 
     localStorage.setItem("businessSlug", slug);
 
     setTimeout(() => {
-      window.location.href = `${window.location.origin}/index.html?business=${slug}`;
+      window.location.href = `/index.html?business=${slug}`;
     }, 1200);
 
   } catch (err) {
-    console.log("CREATE BUSINESS ERROR:", err);
     error.innerText = "Could not connect to server.";
   }
 }
