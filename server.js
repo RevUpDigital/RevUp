@@ -2,6 +2,7 @@ const path = require("path");
 
 require("dotenv").config();
 
+const BASE_URL = process.env.BASE_URL || "https://www.revupdigital.com.au";
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -120,7 +121,7 @@ app.post("/send-sms", async (req, res) => {
       });
     }
 
-    const reviewLink = `https://revup-z6cu.onrender.com/review.html?business=${encodeURIComponent(
+    const reviewLink = `${BASE_URL}/review.html?business=${encodeURIComponent(
       business.slug
     )}&name=${encodeURIComponent(name)}`;
 
