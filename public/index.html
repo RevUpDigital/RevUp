@@ -53,13 +53,6 @@
       margin-top: 14px;
       font-size: 14px;
     }
-
-    .hint {
-      font-size: 12px;
-      color: #666;
-      margin-top: 8px;
-      line-height: 1.4;
-    }
   </style>
 </head>
 
@@ -77,15 +70,21 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const businessSlug = params.get("business");
+
+    let businessSlug = params.get("business");
+
+    // fallback to saved business
+    if (!businessSlug) {
+      businessSlug = localStorage.getItem("businessSlug");
+    }
+
+    // if still no business → go to signup
+    if (!businessSlug) {
+      window.location.href = "/signup.html";
+    }
 
     async function loadBusiness() {
       const status = document.getElementById("status");
-
-      if (!businessSlug) {
-        status.innerText = "❌ Missing business. Use /index.html?business=your-slug";
-        return;
-      }
 
       try {
         const res = await fetch(`/business/${businessSlug}`);
@@ -96,7 +95,9 @@
           return;
         }
 
-        document.querySelector("h3").innerText = `Send Review SMS - ${business.businessName}`;
+        document.querySelector("h3").innerText =
+          `Send Review SMS - ${business.businessName}`;
+
       } catch (err) {
         console.log("LOAD BUSINESS ERROR:", err);
         status.innerText = "❌ Could not load business.";
@@ -107,11 +108,6 @@
       const name = document.getElementById("name").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const status = document.getElementById("status");
-
-      if (!businessSlug) {
-        status.innerText = "❌ Missing business slug in URL.";
-        return;
-      }
 
       if (!name || !phone) {
         status.innerText = "❌ Please enter client name and phone.";
@@ -140,6 +136,7 @@
         } else {
           status.innerText = "❌ Failed: " + JSON.stringify(data.error);
         }
+
       } catch (err) {
         console.log("FETCH ERROR:", err);
         status.innerText = "❌ Cannot connect to server.";
