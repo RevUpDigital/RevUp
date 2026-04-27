@@ -95,9 +95,7 @@
 
   <textarea id="smsMessage">Hi {{name}}, thanks for choosing us. Please leave a review: {{reviewLink}}</textarea>
 
-  <input id="feedbackHeading" value="We're sorry to hear that" />
-
-  <button onclick="createBusiness()">Create Business</button>
+    <button onclick="createBusiness()">Create Business</button>
 
   <div id="error" class="error"></div>
   <div id="result" class="result"></div>
@@ -118,8 +116,7 @@ async function createBusiness() {
   const email = document.getElementById("email").value.trim();
   const googleReviewLink = document.getElementById("googleReviewLink").value.trim();
   const smsMessage = document.getElementById("smsMessage").value.trim();
-  const feedbackHeading = document.getElementById("feedbackHeading").value.trim();
-
+  
   const error = document.getElementById("error");
   const result = document.getElementById("result");
 
@@ -145,7 +142,6 @@ async function createBusiness() {
         email,
         googleReviewLink,
         smsMessage,
-        feedbackHeading
       })
     });
 

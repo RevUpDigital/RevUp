@@ -65,8 +65,8 @@ app.post("/create-business", async (req, res) => {
       email,
       googleReviewLink,
       smsMessage,
-      feedbackHeading,
     } = req.body;
+    const feedbackHeading = "We're sorry to hear that";
 
     const business = await Business.create({
       businessName,
