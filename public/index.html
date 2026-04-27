@@ -69,27 +69,52 @@
 
     <input id="name" placeholder="Client Name" />
     <input id="phone" placeholder="Phone e.g. +61412345678" />
-    <input id="businessSlug" placeholder="Business Slug e.g. test-plumbing" />
-
-    <div class="hint">
-      Use the business slug created on the signup page.
-    </div>
-
+        
     <button onclick="sendSMS()">Send SMS</button>
 
     <div id="status"></div>
   </div>
 
   <script>
+    const params = new URLSearchParams(window.location.search);
+    const businessSlug = params.get("business");
+
+    async function loadBusiness() {
+      const status = document.getElementById("status");
+
+      if (!businessSlug) {
+        status.innerText = "❌ Missing business. Use /index.html?business=your-slug";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/business/${businessSlug}`);
+        const business = await res.json();
+
+        if (!res.ok) {
+          status.innerText = "❌ Business not found.";
+          return;
+        }
+
+        document.querySelector("h3").innerText = `Send Review SMS - ${business.businessName}`;
+      } catch (err) {
+        console.log("LOAD BUSINESS ERROR:", err);
+        status.innerText = "❌ Could not load business.";
+      }
+    }
+
     async function sendSMS() {
       const name = document.getElementById("name").value.trim();
       const phone = document.getElementById("phone").value.trim();
-      const businessSlug = document.getElementById("businessSlug").value.trim();
-
       const status = document.getElementById("status");
 
-      if (!name || !phone || !businessSlug) {
-        status.innerText = "❌ Please fill in all fields.";
+      if (!businessSlug) {
+        status.innerText = "❌ Missing business slug in URL.";
+        return;
+      }
+
+      if (!name || !phone) {
+        status.innerText = "❌ Please enter client name and phone.";
         return;
       }
 
@@ -115,12 +140,13 @@
         } else {
           status.innerText = "❌ Failed: " + JSON.stringify(data.error);
         }
-
       } catch (err) {
         console.log("FETCH ERROR:", err);
         status.innerText = "❌ Cannot connect to server.";
       }
     }
+
+    loadBusiness();
   </script>
 </body>
 </html>

@@ -142,6 +142,7 @@ async function createBusiness() {
 
     const reviewLink = `${window.location.origin}/review.html?business=${slug}&name=John`;
     const dashboardLink = `${window.location.origin}/dashboard.html?business=${slug}`;
+    const senderLink = `${window.location.origin}/index.html?business=${slug}`;
 
     result.style.display = "block";
     result.innerHTML = `
@@ -155,7 +156,10 @@ async function createBusiness() {
       <strong>Dashboard Link:</strong><br>
       <a href="${dashboardLink}" target="_blank">${dashboardLink}</a><br><br>
 
-      <strong>Next:</strong> Use this slug when sending SMS.
+      <strong>SMS Sender Link:</strong><br>
+      <a href="${senderLink}" target="_blank">${senderLink}</a><br><br>
+
+      <strong>Next:</strong> Use the SMS Sender Link to send review requests.
     `;
 
   } catch (err) {
