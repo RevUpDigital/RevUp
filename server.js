@@ -78,8 +78,17 @@ app.post("/create-business", async (req, res) => {
     });
 
     res.json({ success: true, business });
+
   } catch (err) {
     console.log("CREATE BUSINESS ERROR:", err);
+
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        error: "duplicate",
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: "Failed to create business",
