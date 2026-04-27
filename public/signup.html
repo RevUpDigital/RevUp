@@ -145,22 +145,13 @@ async function createBusiness() {
     const senderLink = `${window.location.origin}/index.html?business=${slug}`;
 
     result.style.display = "block";
-    result.innerHTML = `
-      <strong>Business created successfully ✅</strong><br><br>
-      <strong>Business Slug:</strong><br>
-      ${slug}<br><br>
+    result.innerHTML = "<strong>Business created ✅ Redirecting...</strong>";
 
-      <strong>Test Review Link:</strong><br>
-      <a href="${reviewLink}" target="_blank">${reviewLink}</a><br><br>
+    localStorage.setItem("businessSlug", slug);
 
-      <strong>Dashboard Link:</strong><br>
-      <a href="${dashboardLink}" target="_blank">${dashboardLink}</a><br><br>
-
-      <strong>SMS Sender Link:</strong><br>
-      <a href="${senderLink}" target="_blank">${senderLink}</a><br><br>
-
-      <strong>Next:</strong> Use the SMS Sender Link to send review requests.
-    `;
+    setTimeout(() => {
+      window.location.href = `${window.location.origin}/index.html?business=${slug}`;
+    }, 1200);
 
   } catch (err) {
     console.log("CREATE BUSINESS ERROR:", err);
