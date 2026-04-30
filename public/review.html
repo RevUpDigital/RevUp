@@ -1,34 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Leave Feedback</title>
+  <title>RevUp - Leave Feedback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial;
-      background: #f9fafb;
-      text-align: center;
-      padding: 50px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
 
     .card {
+      width: 100%;
+      max-width: 420px;
       background: white;
-      padding: 30px;
-      border-radius: 12px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(15,23,42,0.10);
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #2563eb;
+      margin-bottom: 16px;
     }
 
     h2 {
-      margin-bottom: 20px;
+      margin: 0 0 20px;
+      font-size: 26px;
+      line-height: 1.3;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
     }
 
     .btn {
-      padding: 12px 20px;
-      margin: 10px;
-      font-size: 16px;
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
       border: none;
-      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
     }
 
@@ -44,9 +71,33 @@
 
     textarea {
       width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      margin-top: 14px;
+      font-family: inherit;
+    }
+
+    .submit {
+      width: 100%;
+      margin-top: 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .submit:hover {
+      background: #1d4ed8;
+    }
+
+    .small {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 12px;
     }
   </style>
 </head>
@@ -54,10 +105,14 @@
 <body>
 
 <div class="card">
+  <div class="logo">RevUp</div>
+
   <h2 id="title">Loading...</h2>
 
-  <button class="btn good" onclick="goodReview()">😊 Good</button>
-  <button class="btn bad" onclick="badReview()">😡 Bad</button>
+  <div class="buttons">
+    <button class="btn good" onclick="goodReview()">😊 Good</button>
+    <button class="btn bad" onclick="badReview()">😡 Bad</button>
+  </div>
 </div>
 
 <script>
@@ -71,8 +126,8 @@ let businessData = null;
 async function loadBusiness() {
   if (!businessSlug) {
     document.querySelector(".card").innerHTML = `
-      <h2>Missing business link</h2>
-      <p>This review link is missing a business name.</p>
+      <h2>Invalid link</h2>
+      <p class="small">This review link is missing a business reference.</p>
     `;
     return;
   }
@@ -84,7 +139,7 @@ async function loadBusiness() {
     if (!res.ok) {
       document.querySelector(".card").innerHTML = `
         <h2>Business not found</h2>
-        <p>Please check the review link and try again.</p>
+        <p class="small">Please check the review link.</p>
       `;
       return;
     }
@@ -95,21 +150,15 @@ async function loadBusiness() {
       `Hi ${customerName}, how was your experience with ${business.businessName}?`;
 
   } catch (err) {
-    console.log("LOAD BUSINESS ERROR:", err);
-
     document.querySelector(".card").innerHTML = `
-      <h2>Something went wrong</h2>
-      <p>Could not load this review page.</p>
+      <h2>Error loading page</h2>
+      <p class="small">Please try again later.</p>
     `;
   }
 }
 
 function goodReview() {
-  if (!businessData) {
-    alert("Business is still loading. Please try again.");
-    return;
-  }
-
+  if (!businessData) return;
   window.location.href = businessData.googleReviewLink;
 }
 
@@ -117,10 +166,11 @@ function badReview() {
   const heading = businessData?.feedbackHeading || "We're sorry to hear that";
 
   document.querySelector(".card").innerHTML = `
+    <div class="logo">RevUp</div>
     <h2>${heading}</h2>
-    <p>Please tell us what went wrong:</p>
-    <textarea id="feedback" rows="4"></textarea><br><br>
-    <button class="btn bad" onclick="submitFeedback()">Submit</button>
+    <p class="small">Please tell us what went wrong:</p>
+    <textarea id="feedback" rows="4"></textarea>
+    <button class="submit" onclick="submitFeedback()">Submit feedback</button>
   `;
 }
 
@@ -139,23 +189,25 @@ async function submitFeedback() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        businessSlug: businessSlug,
+        businessSlug,
         name: customerName,
-        feedback: feedback
+        feedback
       })
     });
 
     const result = await res.json();
 
     if (result.success) {
-      document.querySelector(".card").innerHTML =
-        "<h2>Thanks for your feedback 🙏</h2>";
+      document.querySelector(".card").innerHTML = `
+        <div class="logo">RevUp</div>
+        <h2>Thanks for your feedback 🙏</h2>
+        <p class="small">We appreciate you taking the time to help improve the experience.</p>
+      `;
     } else {
-      alert("Something went wrong saving your feedback.");
+      alert("Something went wrong.");
     }
 
   } catch (err) {
-    console.log("SUBMIT FEEDBACK ERROR:", err);
     alert("Could not submit feedback.");
   }
 }
