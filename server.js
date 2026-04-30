@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const { Resend } = require("resend");
 
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const MongoStore = require("connect-mongo").default || require("connect-mongo");
 const bcrypt = require("bcryptjs");
 
 const app = express();
@@ -25,9 +25,9 @@ app.use(
     secret: "revup-secret",
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI,
-    }),
+    //store: MongoStore.create({
+    //  mongoUrl: process.env.MONGODB_URI,
+    //}),
     cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
   })
 );
