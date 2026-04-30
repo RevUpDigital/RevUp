@@ -273,6 +273,18 @@
   </div>
 
   <script>
+    async function checkLogin() {
+      const res = await fetch("/me");
+      const user = await res.json();
+
+      if (!user.loggedIn) {
+        window.location.href = "/login.html";
+        return false;
+      }
+
+      return true;
+    }
+    
     const params = new URLSearchParams(window.location.search);
 
     let businessSlug = params.get("business");
@@ -371,8 +383,12 @@
       }
     }
 
-    loadBusinessName();
-    loadFeedback();
+    checkLogin().then((loggedIn) => {
+      if (loggedIn) {
+        loadBusinessName();
+        loadFeedback();
+      }
+    });
   </script>
 </body>
 </html>

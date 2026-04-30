@@ -139,6 +139,18 @@
   </div>
 
   <script>
+    async function checkLogin() {
+      const res = await fetch("/me");
+      const user = await res.json();
+
+      if (!user.loggedIn) {
+        window.location.href = "/login.html";
+        return false;
+      }
+
+      return true;
+    }
+
     const params = new URLSearchParams(window.location.search);
 
     let businessSlug = params.get("business");
@@ -227,7 +239,11 @@
       window.location.href = "/signup.html";
     }
 
-    loadBusiness();
+    checkLogin().then((loggedIn) => {
+      if (loggedIn) {
+        loadBusiness();
+      }
+    });
   </script>
 </body>
 </html>

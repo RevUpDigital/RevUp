@@ -195,6 +195,22 @@
 </div>
 
 <script>
+async function checkLogin() {
+  const res = await fetch("/me");
+  const user = await res.json();
+
+  if (!user.loggedIn) {
+    window.location.href = "/register.html";
+    return false;
+  }
+
+  return true;
+}
+
+checkLogin().then((loggedIn) => {
+  if (!loggedIn) return;
+});
+
 function createSlug(text) {
   return text
     .toLowerCase()
