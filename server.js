@@ -1,13 +1,17 @@
 const path = require("path");
-
 require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL || "https://www.revupdigital.com.au";
+
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { Resend } = require("resend");
+
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+const bcrypt = require("bcryptjs");
 
 const app = express();
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -15,27 +19,49 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 app.use(express.json());
 app.use(cors());
 
+/* ================= SESSION SETUP ================= */
+app.use(
+  session({
+    secret: "revup-secret",
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+    }),
+    cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
+  })
+);
+
+/* ================= ROUTES ================= */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "home.html"));
 });
 
 app.use(express.static(path.join(__dirname, "public")));
 
+/* ================= DATABASE ================= */
 mongoose
   .connect(process.env.MONGODB_URI, { dbName: "revup" })
-  .then(() => {
-    console.log("MongoDB connected");
-    console.log("Mongo database name:", mongoose.connection.name);
-  })
+  .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB error:", err));
 
+/* ================= MODELS ================= */
+
+// USER MODEL
+const userSchema = new mongoose.Schema({
+  email: { type: String, unique: true },
+  password: String,
+  isAdmin: { type: Boolean, default: false },
+  manualAccess: { type: Boolean, default: false },
+});
+
+const User = mongoose.model("User", userSchema);
+
+// BUSINESS MODEL
 const businessSchema = new mongoose.Schema({
+  userId: mongoose.Schema.Types.ObjectId,
   businessName: String,
-  slug: {
-    type: String,
-    unique: true,
-    required: true,
-  },
+  slug: { type: String, unique: true, required: true },
   email: String,
   googleReviewLink: String,
   smsMessage: String,
@@ -44,20 +70,99 @@ const businessSchema = new mongoose.Schema({
 
 const Business = mongoose.model("Business", businessSchema);
 
+// FEEDBACK MODEL
 const feedbackSchema = new mongoose.Schema({
   businessSlug: String,
   businessName: String,
   name: String,
   feedback: String,
-  date: {
-    type: Date,
-    default: Date.now,
-  },
+  date: { type: Date, default: Date.now },
 });
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
-app.post("/create-business", async (req, res) => {
+/* ================= AUTH MIDDLEWARE ================= */
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: "Not logged in" });
+  }
+  next();
+}
+
+/* ================= AUTH ROUTES ================= */
+
+// REGISTER
+app.post("/register", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      email,
+      password: hashed,
+    });
+
+    req.session.userId = user._id;
+
+    res.json({ success: true });
+
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.json({ success: false, error: "duplicate" });
+    }
+
+    res.status(500).json({ success: false });
+  }
+});
+
+// LOGIN
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.json({ success: false, error: "invalid" });
+  }
+
+  const valid = await bcrypt.compare(password, user.password);
+
+  if (!valid) {
+    return res.json({ success: false, error: "invalid" });
+  }
+
+  req.session.userId = user._id;
+
+  res.json({ success: true });
+});
+
+// LOGOUT
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
+
+// CURRENT USER
+app.get("/me", async (req, res) => {
+  if (!req.session.userId) {
+    return res.json({ loggedIn: false });
+  }
+
+  const user = await User.findById(req.session.userId);
+
+  res.json({
+    loggedIn: true,
+    email: user.email,
+    manualAccess: user.manualAccess,
+    isAdmin: user.isAdmin,
+  });
+});
+
+/* ================= BUSINESS ================= */
+
+app.post("/create-business", requireAuth, async (req, res) => {
   try {
     const {
       businessName,
@@ -66,9 +171,11 @@ app.post("/create-business", async (req, res) => {
       googleReviewLink,
       smsMessage,
     } = req.body;
+
     const feedbackHeading = "We're sorry to hear that";
 
     const business = await Business.create({
+      userId: req.session.userId,
       businessName,
       slug,
       email,
@@ -80,73 +187,42 @@ app.post("/create-business", async (req, res) => {
     res.json({ success: true, business });
 
   } catch (err) {
-    console.log("CREATE BUSINESS ERROR:", err);
-
     if (err.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: "duplicate",
-      });
+      return res.json({ success: false, error: "duplicate" });
     }
 
-    res.status(500).json({
-      success: false,
-      error: "Failed to create business",
-    });
+    res.status(500).json({ success: false });
   }
 });
 
 app.get("/business/:slug", async (req, res) => {
-  try {
-    const business = await Business.findOne({ slug: req.params.slug });
+  const business = await Business.findOne({ slug: req.params.slug });
 
-    if (!business) {
-      return res.status(404).json({
-        success: false,
-        error: "Business not found",
-      });
-    }
-
-    res.json(business);
-  } catch (err) {
-    console.log("GET BUSINESS ERROR:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to fetch business",
-    });
+  if (!business) {
+    return res.status(404).json({ success: false });
   }
+
+  res.json(business);
 });
 
-app.post("/send-sms", async (req, res) => {
+/* ================= SMS ================= */
+
+app.post("/send-sms", requireAuth, async (req, res) => {
   const { name, phone, businessSlug } = req.body;
 
   try {
     const business = await Business.findOne({ slug: businessSlug });
 
-    if (!business) {
-      return res.status(404).json({
-        success: false,
-        error: "Business not found",
-      });
-    }
-
-    const reviewLink = `${BASE_URL}/review.html?business=${encodeURIComponent(
-      business.slug
-    )}&name=${encodeURIComponent(name)}`;
+    const reviewLink = `${BASE_URL}/review.html?business=${business.slug}&name=${name}`;
 
     const message = business.smsMessage
       .replaceAll("{{name}}", name)
       .replaceAll("{{reviewLink}}", reviewLink);
 
-    const response = await axios.post(
+    await axios.post(
       "https://rest.clicksend.com/v3/sms/send",
       {
-        messages: [
-          {
-            body: message,
-            to: phone,
-          },
-        ],
+        messages: [{ body: message, to: phone }],
       },
       {
         auth: {
@@ -156,77 +232,46 @@ app.post("/send-sms", async (req, res) => {
       }
     );
 
-    console.log("CLICKSEND RESPONSE:", response.data);
+    res.json({ success: true });
 
-    res.json({
-      success: true,
-      data: response.data,
-    });
   } catch (err) {
-    console.log("SEND SMS ERROR:", err.response?.data || err.message);
-
-    res.status(500).json({
-      success: false,
-      error: err.response?.data || err.message,
-    });
+    res.status(500).json({ success: false });
   }
 });
+
+/* ================= FEEDBACK ================= */
 
 app.post("/save-feedback", async (req, res) => {
   const { businessSlug, name, feedback } = req.body;
 
-  try {
-    const business = await Business.findOne({ slug: businessSlug });
+  const business = await Business.findOne({ slug: businessSlug });
 
-    if (!business) {
-      return res.status(404).json({
-        success: false,
-        error: "Business not found",
-      });
-    }
+  await Feedback.create({
+    businessSlug,
+    businessName: business.businessName,
+    name,
+    feedback,
+  });
 
-    const entry = await Feedback.create({
-      businessSlug: business.slug,
-      businessName: business.businessName,
-      name,
-      feedback,
-    });
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: business.email,
+    subject: `New Feedback`,
+    text: feedback,
+  });
 
-    console.log("NEW FEEDBACK:", entry);
-
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: business.email,
-      subject: `New Customer Feedback - ${business.businessName}`,
-      text: `New feedback from ${name}:\n\n${feedback}`,
-    });
-
-    console.log("EMAIL SENT");
-
-    res.json({ success: true });
-  } catch (err) {
-    console.log("SAVE FEEDBACK ERROR:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to save feedback",
-    });
-  }
+  res.json({ success: true });
 });
 
-app.get("/get-feedback", async (req, res) => {
-  try {
-    const { businessSlug } = req.query;
+app.get("/get-feedback", requireAuth, async (req, res) => {
+  const { businessSlug } = req.query;
 
-    const filter = businessSlug ? { businessSlug } : {};
+  const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
 
-    const feedback = await Feedback.find(filter).sort({ date: -1 });
-
-    res.json(feedback);
-  } catch (err) {
-    console.log("GET FEEDBACK ERROR:", err);
-    res.status(500).json([]);
-  }
+  res.json(feedback);
 });
+
+/* ================= START ================= */
 
 const PORT = process.env.PORT || 3000;
 
