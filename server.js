@@ -2,7 +2,7 @@ const path = require("path");
 require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL || "https://www.revupdigital.com.au";
-const STRIPE_PRICE_ID = price_1TRqKmBNSfcpwTI16biTcHKC;
+const STRIPE_PRICE_ID = "price_1TRqKmBNSfcpwTI16biTcHKC";
 
 const express = require("express");
 const axios = require("axios");
@@ -22,7 +22,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 app.use(express.json());
 app.use(cors());
 
-/* ================= SESSION SETUP ================= */
+/* ================= SESSION ================= */
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "revup-secret",
@@ -52,10 +52,7 @@ const userSchema = new mongoose.Schema({
   password: String,
   isAdmin: { type: Boolean, default: false },
   manualAccess: { type: Boolean, default: false },
-  subscriptionStatus: {
-    type: String,
-    default: "none",
-  },
+  subscriptionStatus: { type: String, default: "none" },
 });
 
 const User = mongoose.model("User", userSchema);
@@ -63,7 +60,7 @@ const User = mongoose.model("User", userSchema);
 const businessSchema = new mongoose.Schema({
   userId: mongoose.Schema.Types.ObjectId,
   businessName: String,
-  slug: { type: String, unique: true, required: true },
+  slug: { type: String, unique: true },
   email: String,
   googleReviewLink: String,
   smsMessage: String,
@@ -82,9 +79,9 @@ const feedbackSchema = new mongoose.Schema({
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
-/* ================= AUTH HELPERS ================= */
+/* ================= AUTH ================= */
 
-function hasUserAccess(user) {
+function hasAccess(user) {
   return (
     user.isAdmin ||
     user.manualAccess ||
@@ -93,31 +90,18 @@ function hasUserAccess(user) {
   );
 }
 
-/* ================= AUTH MIDDLEWARE ================= */
-
 function requireAuth(req, res, next) {
   if (!req.session.userId) {
-    return res.status(401).json({ success: false, error: "Not logged in" });
+    return res.status(401).json({ error: "Not logged in" });
   }
-
   next();
 }
 
 async function requireAccess(req, res, next) {
   const user = await User.findById(req.session.userId);
 
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      error: "Not logged in",
-    });
-  }
-
-  if (!hasUserAccess(user)) {
-    return res.status(403).json({
-      success: false,
-      error: "No active subscription",
-    });
+  if (!user || !hasAccess(user)) {
+    return res.status(403).json({ error: "No access" });
   }
 
   next();
@@ -143,7 +127,6 @@ app.post("/register", async (req, res) => {
     if (err.code === 11000) {
       return res.json({ success: false, error: "duplicate" });
     }
-
     res.status(500).json({ success: false });
   }
 });
@@ -153,83 +136,48 @@ app.post("/login", async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.json({ success: false, error: "invalid" });
-  }
+  if (!user) return res.json({ success: false });
 
   const valid = await bcrypt.compare(password, user.password);
 
-  if (!valid) {
-    return res.json({ success: false, error: "invalid" });
-  }
+  if (!valid) return res.json({ success: false });
 
   req.session.userId = user._id;
 
   res.json({ success: true });
 });
 
-app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/");
-  });
-});
-
 app.get("/me", async (req, res) => {
-  if (!req.session.userId) {
-    return res.json({ loggedIn: false });
-  }
+  if (!req.session.userId) return res.json({ loggedIn: false });
 
   const user = await User.findById(req.session.userId);
 
-  if (!user) {
-    return res.json({ loggedIn: false });
-  }
-
   res.json({
     loggedIn: true,
-    email: user.email,
-    manualAccess: user.manualAccess,
-    isAdmin: user.isAdmin,
-    subscriptionStatus: user.subscriptionStatus,
-    hasAccess: hasUserAccess(user),
+    hasAccess: hasAccess(user),
   });
 });
 
 /* ================= STRIPE ================= */
 
 app.post("/create-checkout-session", requireAuth, async (req, res) => {
-  try {
-    const user = await User.findById(req.session.userId);
+  const user = await User.findById(req.session.userId);
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: "Not logged in",
-      });
-    }
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    mode: "subscription",
+    customer_email: user.email,
+    line_items: [
+      {
+        price: STRIPE_PRICE_ID,
+        quantity: 1,
+      },
+    ],
+    success_url: `${BASE_URL}/payment-success`,
+    cancel_url: `${BASE_URL}/index.html`,
+  });
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "subscription",
-      customer_email: user.email,
-      line_items: [
-        {
-          price: STRIPE_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-      success_url: `${BASE_URL}/payment-success`,
-      cancel_url: `${BASE_URL}/index.html?payment=cancel`,
-    });
-
-    res.json({ url: checkoutSession.url });
-  } catch (err) {
-    console.log("STRIPE CHECKOUT ERROR:", err);
-    res.status(500).json({
-      success: false,
-      error: "Failed to create checkout session",
-    });
-  }
+  res.json({ url: session.url });
 });
 
 app.get("/payment-success", requireAuth, async (req, res) => {
@@ -237,23 +185,15 @@ app.get("/payment-success", requireAuth, async (req, res) => {
     subscriptionStatus: "active",
   });
 
-  res.redirect("/index.html?payment=success");
+  res.redirect("/index.html");
 });
 
 /* ================= BUSINESS ================= */
 
 app.post("/create-business", requireAuth, async (req, res) => {
+  const { businessName, slug, email, googleReviewLink, smsMessage } = req.body;
+
   try {
-    const {
-      businessName,
-      slug,
-      email,
-      googleReviewLink,
-      smsMessage,
-    } = req.body;
-
-    const feedbackHeading = "We're sorry to hear that";
-
     const business = await Business.create({
       userId: req.session.userId,
       businessName,
@@ -261,27 +201,13 @@ app.post("/create-business", requireAuth, async (req, res) => {
       email,
       googleReviewLink,
       smsMessage,
-      feedbackHeading,
+      feedbackHeading: "We're sorry to hear that",
     });
 
     res.json({ success: true, business });
   } catch (err) {
-    if (err.code === 11000) {
-      return res.json({ success: false, error: "duplicate" });
-    }
-
-    res.status(500).json({ success: false });
+    res.json({ success: false, error: "duplicate" });
   }
-});
-
-app.get("/business/:slug", async (req, res) => {
-  const business = await Business.findOne({ slug: req.params.slug });
-
-  if (!business) {
-    return res.status(404).json({ success: false });
-  }
-
-  res.json(business);
 });
 
 /* ================= SMS ================= */
@@ -289,42 +215,28 @@ app.get("/business/:slug", async (req, res) => {
 app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
   const { name, phone, businessSlug } = req.body;
 
-  try {
-    const business = await Business.findOne({ slug: businessSlug });
+  const business = await Business.findOne({ slug: businessSlug });
 
-    if (!business) {
-      return res.status(404).json({
-        success: false,
-        error: "Business not found",
-      });
-    }
+  const reviewLink = `${BASE_URL}/review.html?business=${business.slug}&name=${name}`;
 
-    const reviewLink = `${BASE_URL}/review.html?business=${encodeURIComponent(
-      business.slug
-    )}&name=${encodeURIComponent(name)}`;
+  const message = business.smsMessage
+    .replaceAll("{{name}}", name)
+    .replaceAll("{{reviewLink}}", reviewLink);
 
-    const message = business.smsMessage
-      .replaceAll("{{name}}", name)
-      .replaceAll("{{reviewLink}}", reviewLink);
-
-    await axios.post(
-      "https://rest.clicksend.com/v3/sms/send",
-      {
-        messages: [{ body: message, to: phone }],
+  await axios.post(
+    "https://rest.clicksend.com/v3/sms/send",
+    {
+      messages: [{ body: message, to: phone }],
+    },
+    {
+      auth: {
+        username: process.env.CLICKSEND_USERNAME,
+        password: process.env.CLICKSEND_API_KEY,
       },
-      {
-        auth: {
-          username: process.env.CLICKSEND_USERNAME,
-          password: process.env.CLICKSEND_API_KEY,
-        },
-      }
-    );
+    }
+  );
 
-    res.json({ success: true });
-  } catch (err) {
-    console.log("SEND SMS ERROR:", err.response?.data || err.message);
-    res.status(500).json({ success: false });
-  }
+  res.json({ success: true });
 });
 
 /* ================= FEEDBACK ================= */
@@ -332,41 +244,29 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
 app.post("/save-feedback", async (req, res) => {
   const { businessSlug, name, feedback } = req.body;
 
-  try {
-    const business = await Business.findOne({ slug: businessSlug });
+  const business = await Business.findOne({ slug: businessSlug });
 
-    if (!business) {
-      return res.status(404).json({
-        success: false,
-        error: "Business not found",
-      });
-    }
+  await Feedback.create({
+    businessSlug,
+    businessName: business.businessName,
+    name,
+    feedback,
+  });
 
-    await Feedback.create({
-      businessSlug,
-      businessName: business.businessName,
-      name,
-      feedback,
-    });
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: business.email,
+    subject: "New Feedback",
+    text: feedback,
+  });
 
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: business.email,
-      subject: `New Feedback`,
-      text: feedback,
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    console.log("SAVE FEEDBACK ERROR:", err);
-    res.status(500).json({ success: false });
-  }
+  res.json({ success: true });
 });
 
 app.get("/get-feedback", requireAuth, requireAccess, async (req, res) => {
   const { businessSlug } = req.query;
 
-  const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
+  const feedback = await Feedback.find({ businessSlug });
 
   res.json(feedback);
 });
