@@ -10,7 +10,6 @@ const mongoose = require("mongoose");
 const { Resend } = require("resend");
 
 const session = require("express-session");
-const MongoStore = require("connect-mongo").default || require("connect-mongo");
 const bcrypt = require("bcryptjs");
 
 const app = express();
@@ -22,13 +21,10 @@ app.use(cors());
 /* ================= SESSION SETUP ================= */
 app.use(
   session({
-    secret: "revup-secret",
+    secret: process.env.SESSION_SECRET || "revup-secret",
     resave: false,
     saveUninitialized: false,
-    //store: MongoStore.create({
-    //  mongoUrl: process.env.MONGODB_URI,
-    //}),
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }, // 1 day
+    cookie: { maxAge: 1000 * 60 * 60 * 24 },
   })
 );
 
@@ -47,17 +43,19 @@ mongoose
 
 /* ================= MODELS ================= */
 
-// USER MODEL
 const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   isAdmin: { type: Boolean, default: false },
   manualAccess: { type: Boolean, default: false },
+  subscriptionStatus: {
+    type: String,
+    default: "none",
+  },
 });
 
 const User = mongoose.model("User", userSchema);
 
-// BUSINESS MODEL
 const businessSchema = new mongoose.Schema({
   userId: mongoose.Schema.Types.ObjectId,
   businessName: String,
@@ -70,7 +68,6 @@ const businessSchema = new mongoose.Schema({
 
 const Business = mongoose.model("Business", businessSchema);
 
-// FEEDBACK MODEL
 const feedbackSchema = new mongoose.Schema({
   businessSlug: String,
   businessName: String,
@@ -81,17 +78,49 @@ const feedbackSchema = new mongoose.Schema({
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
+/* ================= AUTH HELPERS ================= */
+
+function hasUserAccess(user) {
+  return (
+    user.isAdmin ||
+    user.manualAccess ||
+    user.subscriptionStatus === "active" ||
+    user.subscriptionStatus === "trialing"
+  );
+}
+
 /* ================= AUTH MIDDLEWARE ================= */
+
 function requireAuth(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ success: false, error: "Not logged in" });
   }
+
+  next();
+}
+
+async function requireAccess(req, res, next) {
+  const user = await User.findById(req.session.userId);
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: "Not logged in",
+    });
+  }
+
+  if (!hasUserAccess(user)) {
+    return res.status(403).json({
+      success: false,
+      error: "No active subscription",
+    });
+  }
+
   next();
 }
 
 /* ================= AUTH ROUTES ================= */
 
-// REGISTER
 app.post("/register", async (req, res) => {
   const { email, password } = req.body;
 
@@ -106,7 +135,6 @@ app.post("/register", async (req, res) => {
     req.session.userId = user._id;
 
     res.json({ success: true });
-
   } catch (err) {
     if (err.code === 11000) {
       return res.json({ success: false, error: "duplicate" });
@@ -116,7 +144,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// LOGIN
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -137,14 +164,12 @@ app.post("/login", async (req, res) => {
   res.json({ success: true });
 });
 
-// LOGOUT
 app.get("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/");
   });
 });
 
-// CURRENT USER
 app.get("/me", async (req, res) => {
   if (!req.session.userId) {
     return res.json({ loggedIn: false });
@@ -152,11 +177,17 @@ app.get("/me", async (req, res) => {
 
   const user = await User.findById(req.session.userId);
 
+  if (!user) {
+    return res.json({ loggedIn: false });
+  }
+
   res.json({
     loggedIn: true,
     email: user.email,
     manualAccess: user.manualAccess,
     isAdmin: user.isAdmin,
+    subscriptionStatus: user.subscriptionStatus,
+    hasAccess: hasUserAccess(user),
   });
 });
 
@@ -185,7 +216,6 @@ app.post("/create-business", requireAuth, async (req, res) => {
     });
 
     res.json({ success: true, business });
-
   } catch (err) {
     if (err.code === 11000) {
       return res.json({ success: false, error: "duplicate" });
@@ -207,13 +237,22 @@ app.get("/business/:slug", async (req, res) => {
 
 /* ================= SMS ================= */
 
-app.post("/send-sms", requireAuth, async (req, res) => {
+app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
   const { name, phone, businessSlug } = req.body;
 
   try {
     const business = await Business.findOne({ slug: businessSlug });
 
-    const reviewLink = `${BASE_URL}/review.html?business=${business.slug}&name=${name}`;
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        error: "Business not found",
+      });
+    }
+
+    const reviewLink = `${BASE_URL}/review.html?business=${encodeURIComponent(
+      business.slug
+    )}&name=${encodeURIComponent(name)}`;
 
     const message = business.smsMessage
       .replaceAll("{{name}}", name)
@@ -233,8 +272,8 @@ app.post("/send-sms", requireAuth, async (req, res) => {
     );
 
     res.json({ success: true });
-
   } catch (err) {
+    console.log("SEND SMS ERROR:", err.response?.data || err.message);
     res.status(500).json({ success: false });
   }
 });
@@ -244,26 +283,38 @@ app.post("/send-sms", requireAuth, async (req, res) => {
 app.post("/save-feedback", async (req, res) => {
   const { businessSlug, name, feedback } = req.body;
 
-  const business = await Business.findOne({ slug: businessSlug });
+  try {
+    const business = await Business.findOne({ slug: businessSlug });
 
-  await Feedback.create({
-    businessSlug,
-    businessName: business.businessName,
-    name,
-    feedback,
-  });
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        error: "Business not found",
+      });
+    }
 
-  await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: business.email,
-    subject: `New Feedback`,
-    text: feedback,
-  });
+    await Feedback.create({
+      businessSlug,
+      businessName: business.businessName,
+      name,
+      feedback,
+    });
 
-  res.json({ success: true });
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: business.email,
+      subject: `New Feedback`,
+      text: feedback,
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log("SAVE FEEDBACK ERROR:", err);
+    res.status(500).json({ success: false });
+  }
 });
 
-app.get("/get-feedback", requireAuth, async (req, res) => {
+app.get("/get-feedback", requireAuth, requireAccess, async (req, res) => {
   const { businessSlug } = req.query;
 
   const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
