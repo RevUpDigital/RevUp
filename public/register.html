@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RevUp - Create Account</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .nav {
+      background: rgba(255,255,255,0.95);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .nav a {
+      margin-left: 22px;
+      color: #334155;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .nav-cta {
+      background: #2563eb;
+      color: white !important;
+      padding: 10px 16px;
+      border-radius: 999px;
+    }
+    .page {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: white;
+      padding: 36px;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 20px 60px rgba(15,23,42,0.10);
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: 34px;
+      margin: 0 0 12px;
+      letter-spacing: -0.8px;
+    }
+    p {
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+    }
+    input {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .error {
+      color: #ef4444;
+      margin-top: 14px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .result {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #16a34a;
+      font-weight: 700;
+    }
+    .small-link {
+      text-align: center;
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 14px;
+    }
+    .small-link a {
+      color: #2563eb;
+      font-weight: 700;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="nav">
+    <a href="/" class="logo">RevUp 🚀</a>
+    <div>
+      <a href="/">Home</a>
+      <a href="/login.html">Login</a>
+      <a href="/register.html" class="nav-cta">Create account</a>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="card">
+      <div class="badge">Create your RevUp account</div>
+      <h1>Create account</h1>
+      <p>Create your login first, then set up your business review funnel.</p>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="Create a password" />
+
+      <button onclick="register()">Create Account</button>
+
+      <div id="error" class="error"></div>
+      <div id="result" class="result"></div>
+
+      <div class="small-link">
+        Already have an account? <a href="/login.html">Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function register() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const error = document.getElementById("error");
+      const result = document.getElementById("result");
+
+      error.innerText = "";
+      result.innerText = "";
+
+      if (!email || !password) {
+        error.innerText = "Please enter email and password.";
+        return;
+      }
+
+      if (password.length < 6) {
+        error.innerText = "Password must be at least 6 characters.";
+        return;
+      }
+
+      try {
+        const res = await fetch("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          if (data.error === "duplicate") {
+            error.innerText = "An account with this email already exists.";
+          } else {
+            error.innerText = "Could not create account.";
+          }
+          return;
+        }
+
+        result.innerText = "✅ Account created. Redirecting...";
+
+        setTimeout(() => {
+          window.location.href = "/signup.html";
+        }, 800);
+
+      } catch (err) {
+        error.innerText = "Could not connect to server.";
+      }
+    }
+  </script>
+</body>
+</html>
