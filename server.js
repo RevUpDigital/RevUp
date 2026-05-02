@@ -321,28 +321,7 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
 });
 
 app.get("/payment-success", requireAuth, async (req, res) => {
-  try {
-    const { session_id } = req.query;
-
-    if (!session_id) {
-      return res.redirect("/index.html");
-    }
-
-    const checkoutSession = await stripe.checkout.sessions.retrieve(session_id);
-
-    if (checkoutSession.payment_status === "paid") {
-      await User.findByIdAndUpdate(req.session.userId, {
-        stripeCustomerId: checkoutSession.customer,
-        stripeSubscriptionId: checkoutSession.subscription,
-        subscriptionStatus: "active",
-      });
-    }
-
-    res.redirect("/index.html");
-  } catch (err) {
-    console.log("Payment success error:", err);
-    res.redirect("/index.html");
-  }
+  res.redirect("/index.html");
 });
 
 /* ================= BUSINESS ================= */
