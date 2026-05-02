@@ -412,6 +412,15 @@ app.post("/create-business", requireAuth, async (req, res) => {
   const { businessName, slug, email, googleReviewLink, smsMessage } = req.body;
 
   try {
+    const existingBusiness = await Business.findOne({ userId: req.session.userId });
+
+    if (existingBusiness) {
+      return res.status(400).json({
+        success: false,
+        error: "You already have a business. You can edit it in your profile.",
+      });
+    }
+
     const business = await Business.create({
       userId: req.session.userId,
       businessName,
