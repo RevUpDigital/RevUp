@@ -220,11 +220,77 @@ app.get("/me", async (req, res) => {
 
   res.json({
     loggedIn: true,
+    email: user.email,
     hasAccess: hasAccess(user),
     subscriptionStatus: user.subscriptionStatus,
     isAdmin: user.isAdmin,
     manualAccess: user.manualAccess,
   });
+});
+
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ success: false });
+    }
+
+    res.clearCookie("connect.sid");
+    res.json({ success: true });
+  });
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.redirect("/login.html");
+  });
+});
+
+app.post("/update-profile", requireAuth, async (req, res) => {
+  const { email, currentPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.session.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+
+      if (existingUser) {
+        return res.json({ success: false, error: "Email already in use" });
+      }
+
+      user.email = email;
+    }
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.json({ success: false, error: "Current password required" });
+      }
+
+      const valid = await bcrypt.compare(currentPassword, user.password);
+
+      if (!valid) {
+        return res.json({ success: false, error: "Current password is incorrect" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.json({ success: false, error: "New password must be at least 6 characters" });
+      }
+
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    await user.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log("Update profile error:", err);
+    res.status(500).json({ success: false, error: "Could not update profile" });
+  }
 });
 
 /* ================= STRIPE ================= */

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RevUp - Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .nav {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .nav a {
+      margin-left: 22px;
+      color: #334155;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      color: #2563eb;
+    }
+
+    .page {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: white;
+      padding: 36px;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 20px 60px rgba(15,23,42,0.10);
+    }
+
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: 34px;
+      margin: 0 0 12px;
+    }
+
+    p {
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 18px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .secondary {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .danger {
+      background: #ef4444;
+    }
+
+    .danger:hover {
+      background: #dc2626;
+    }
+
+    .status-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 16px;
+      margin: 20px 0;
+      line-height: 1.7;
+      color: #334155;
+    }
+
+    .success {
+      color: #16a34a;
+      margin-top: 14px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .error {
+      color: #ef4444;
+      margin-top: 14px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="nav">
+    <a href="/" class="logo">RevUp 🚀</a>
+    <div>
+        <a href="/">Home</a>
+        <a href="/index.html">App</a>
+        <a href="#" onclick="goToDashboard()">Dashboard</a>
+        <a href="/profile.html">Profile</a>
+        <a href="#" onclick="logout()">Logout</a>     
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="card">
+      <div class="badge">Account settings</div>
+      <h1>Your Profile</h1>
+      <p>View and update your RevUp account details.</p>
+
+      <div class="status-box">
+        <strong>Email:</strong> <span id="currentEmail">Loading...</span><br>
+        <strong>Subscription:</strong> <span id="subscriptionStatus">Loading...</span><br>
+        <strong>Access:</strong> <span id="accessStatus">Loading...</span>
+      </div>
+
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@example.com" />
+
+      <label for="currentPassword">Current password</label>
+      <input id="currentPassword" type="password" placeholder="Required only if changing password" />
+
+      <label for="newPassword">New password</label>
+      <input id="newPassword" type="password" placeholder="Leave blank to keep current password" />
+
+      <button onclick="updateProfile()">Save Changes</button>
+      <button class="secondary" onclick="goToApp()">Back to App</button>
+      <button class="danger" onclick="logout()">Logout</button>
+
+      <div id="success" class="success"></div>
+      <div id="error" class="error"></div>
+    </div>
+  </div>
+
+  <script>
+    let businessSlug = localStorage.getItem("businessSlug");
+
+    async function loadProfile() {
+      try {
+        const res = await fetch("/me");
+        const user = await res.json();
+
+        if (!user.loggedIn) {
+          window.location.href = "/login.html";
+          return;
+        }
+
+        document.getElementById("currentEmail").innerText = user.email || "Not available";
+        document.getElementById("email").value = user.email || "";
+
+        const subMap = {
+            active: "Pro Active",
+            trialing: "Trial",
+            canceled: "Cancelled",
+            none: "Free"
+            };
+
+        document.getElementById("subscriptionStatus").innerText =
+        subMap[user.subscriptionStatus] || user.subscriptionStatus || "Free";
+
+        document.getElementById("accessStatus").innerText =
+          user.hasAccess ? "Active" : "No access";
+
+      } catch (err) {
+        document.getElementById("error").innerText = "Could not load profile.";
+      }
+    }
+
+    async function updateProfile() {
+      const email = document.getElementById("email").value.trim();
+      const currentPassword = document.getElementById("currentPassword").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+
+      const success = document.getElementById("success");
+      const error = document.getElementById("error");
+
+      success.innerText = "";
+      error.innerText = "";
+
+      try {
+        const res = await fetch("/update-profile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email,
+            currentPassword,
+            newPassword
+          })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          error.innerText = data.error || "Could not update profile.";
+          return;
+        }
+
+        success.innerText = "✅ Profile updated successfully.";
+        document.getElementById("currentPassword").value = "";
+        document.getElementById("newPassword").value = "";
+
+        loadProfile();
+
+      } catch (err) {
+        error.innerText = "Could not connect to server.";
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch("/logout", {
+          method: "POST"
+        });
+
+        localStorage.clear();
+        window.location.href = "/login.html";
+
+      } catch (err) {
+        window.location.href = "/logout";
+      }
+    }
+
+    function goToApp() {
+      if (businessSlug) {
+        window.location.href = `/index.html?business=${businessSlug}`;
+      } else {
+        window.location.href = "/signup.html";
+      }
+    }
+
+    function goToDashboard() {
+    if (businessSlug) {
+        window.location.href = `/dashboard.html?business=${businessSlug}`;
+    } else {
+        window.location.href = "/signup.html";
+    }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>
