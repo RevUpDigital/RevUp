@@ -4,15 +4,32 @@
   <title>RevUp Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body {
       font-family: sans-serif;
       background: #f8fafc;
-      padding: 40px;
+      padding: 30px;
     }
 
     h1 {
       margin-bottom: 20px;
+    }
+
+    .filters {
+      margin-bottom: 20px;
+    }
+
+    .filters button {
+      margin-right: 10px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      font-weight: 600;
     }
 
     .card {
@@ -25,14 +42,15 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
     }
 
     .stat {
       background: #f1f5f9;
       padding: 16px;
       border-radius: 12px;
+      text-align: center;
     }
 
     .stat strong {
@@ -52,9 +70,20 @@
 
 <h1>RevUp Admin Dashboard</h1>
 
+<div class="filters">
+  <button onclick="loadStats(7)">Last 7 Days</button>
+  <button onclick="loadStats(30)">Last 30 Days</button>
+  <button onclick="loadStats(0)">All Time</button>
+</div>
+
 <div class="card">
   <h2>Global Stats</h2>
   <div class="grid" id="globalStats"></div>
+</div>
+
+<div class="card">
+  <h2>Performance Chart</h2>
+  <canvas id="statsChart"></canvas>
 </div>
 
 <div class="card">
@@ -63,12 +92,15 @@
 </div>
 
 <script>
-async function loadStats() {
-  const res = await fetch("/admin-stats");
+let chart;
+
+async function loadStats(days = 0) {
+  const res = await fetch(`/admin-stats?days=${days}`);
   const data = await res.json();
 
   const g = data.global;
 
+  // Global stats UI
   document.getElementById("globalStats").innerHTML = `
     <div class="stat"><strong>${g.smsSent}</strong>SMS Sent</div>
     <div class="stat"><strong>${g.linkClicked}</strong>Link Clicks</div>
@@ -77,8 +109,30 @@ async function loadStats() {
     <div class="stat"><strong>${g.feedback}</strong>Feedback</div>
   `;
 
-  const businesses = data.businesses;
+  // Chart
+  const ctx = document.getElementById("statsChart");
 
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["SMS", "Clicks", "Google", "Bad", "Feedback"],
+      datasets: [{
+        label: "Activity",
+        data: [
+          g.smsSent,
+          g.linkClicked,
+          g.goodClicks,
+          g.badClicks,
+          g.feedback
+        ]
+      }]
+    }
+  });
+
+  // Business stats
+  const businesses = data.businesses;
   let html = "";
 
   Object.values(businesses).forEach(b => {
@@ -100,6 +154,7 @@ async function loadStats() {
   document.getElementById("businessStats").innerHTML = html;
 }
 
+// Load default (all time)
 loadStats();
 </script>
 

@@ -525,7 +525,17 @@ app.get("/admin-stats", requireAuth, async (req, res) => {
     return res.status(403).json({ error: "No access" });
   }
 
-  const events = await ReviewEvent.find();
+  const days = parseInt(req.query.days) || 0;
+
+  let filter = {};
+
+  if (days > 0) {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    filter.date = { $gte: date };
+  }
+
+  const events = await ReviewEvent.find(filter);
 
   const globalStats = {
     smsSent: 0,
@@ -538,12 +548,14 @@ app.get("/admin-stats", requireAuth, async (req, res) => {
   const businessStats = {};
 
   events.forEach(e => {
+    // Global
     if (e.eventType === "sms_sent") globalStats.smsSent++;
     if (e.eventType === "review_link_clicked") globalStats.linkClicked++;
     if (e.eventType === "good_review_clicked") globalStats.goodClicks++;
     if (e.eventType === "bad_review_clicked") globalStats.badClicks++;
     if (e.eventType === "private_feedback_submitted") globalStats.feedback++;
 
+    // Per business
     if (!businessStats[e.businessSlug]) {
       businessStats[e.businessSlug] = {
         businessName: e.businessName,
