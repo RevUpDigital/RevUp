@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>RevUp - Get More 5-Star Reviews</title>
+  <title>RevUp - Get More 5-Star Google Reviews</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -43,9 +41,7 @@
       font-size: 14px;
     }
 
-    .nav-links a:hover {
-      color: #2563eb;
-    }
+    .nav-links a:hover { color: #2563eb; }
 
     .nav-cta {
       background: #2563eb;
@@ -82,10 +78,13 @@
       letter-spacing: -1.5px;
     }
 
-    .hero p {
+    .hero p, .section-title p, .card p, .faq-item p {
       color: #64748b;
-      font-size: 19px;
       line-height: 1.6;
+    }
+
+    .hero p {
+      font-size: 19px;
       margin-bottom: 28px;
     }
 
@@ -101,6 +100,7 @@
       border-radius: 12px;
       text-decoration: none;
       font-weight: 800;
+      text-align: center;
     }
 
     .btn-primary {
@@ -136,6 +136,7 @@
       border-radius: 16px;
       line-height: 1.5;
       font-size: 14px;
+      margin-top: 14px;
     }
 
     .mini-card {
@@ -146,10 +147,7 @@
       margin-top: 12px;
     }
 
-    .mini-card strong {
-      display: block;
-      margin-bottom: 6px;
-    }
+    .mini-card strong { display: block; margin-bottom: 6px; }
 
     section {
       max-width: 1150px;
@@ -159,19 +157,13 @@
 
     .section-title {
       text-align: center;
-      max-width: 700px;
+      max-width: 740px;
       margin: 0 auto 40px;
     }
 
     .section-title h2 {
       font-size: 36px;
       margin: 0 0 12px;
-    }
-
-    .section-title p {
-      color: #64748b;
-      font-size: 17px;
-      line-height: 1.6;
     }
 
     .grid-3 {
@@ -198,12 +190,6 @@
       font-size: 20px;
     }
 
-    .card p {
-      color: #64748b;
-      line-height: 1.6;
-      margin: 0;
-    }
-
     .stats {
       background: #0f172a;
       color: white;
@@ -221,19 +207,42 @@
       color: #93c5fd;
     }
 
-    .stat span {
-      color: #cbd5e1;
+    .stat span { color: #cbd5e1; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 920px;
+      margin: auto;
     }
 
-    .pricing {
+    .pricing-card {
       background: white;
-      border: 2px solid #2563eb;
+      border: 1px solid #e2e8f0;
       border-radius: 24px;
       padding: 34px;
-      max-width: 460px;
-      margin: auto;
-      box-shadow: 0 20px 60px rgba(37,99,235,0.15);
+      box-shadow: 0 20px 60px rgba(15,23,42,0.08);
       text-align: center;
+      position: relative;
+    }
+
+    .pricing-card.featured {
+      border: 2px solid #2563eb;
+      box-shadow: 0 20px 60px rgba(37,99,235,0.16);
+    }
+
+    .popular {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2563eb;
+      color: white;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
     }
 
     .price {
@@ -245,6 +254,15 @@
     .price span {
       font-size: 16px;
       color: #64748b;
+    }
+
+    .sms-quota {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 18px 0;
+      font-weight: 800;
     }
 
     .list {
@@ -270,12 +288,6 @@
     .faq-item strong {
       display: block;
       margin-bottom: 8px;
-    }
-
-    .faq-item p {
-      color: #64748b;
-      margin: 0;
-      line-height: 1.6;
     }
 
     .final-cta {
@@ -309,23 +321,15 @@
     }
 
     @media (max-width: 850px) {
-      .hero {
-        grid-template-columns: 1fr;
-        padding-top: 60px;
-      }
-
-      h1 {
-        font-size: 40px;
-      }
-
-      .grid-3,
-      .stats {
+      .hero, .grid-3, .stats, .pricing-grid {
         grid-template-columns: 1fr;
       }
 
-      .nav {
-        padding: 16px 20px;
-      }
+      .hero { padding-top: 60px; }
+
+      h1 { font-size: 40px; }
+
+      .nav { padding: 16px 20px; }
 
       .nav-links a {
         margin-left: 12px;
@@ -350,7 +354,7 @@
   <div class="hero">
     <div>
       <div class="badge">Google review growth made simple</div>
-      <h1>Turn happy customers into 5-star reviews.</h1>
+      <h1>Turn happy customers into 5-star Google reviews.</h1>
       <p>
         RevUp helps local businesses send review requests by SMS, send happy customers to Google,
         and collect private feedback from unhappy customers before it becomes a public problem.
@@ -358,14 +362,14 @@
 
       <div class="buttons">
         <a href="/signup.html" class="btn btn-primary">Start free</a>
-        <a href="#how" class="btn btn-secondary">See how it works</a>
+        <a href="#pricing" class="btn btn-secondary">View pricing</a>
       </div>
     </div>
 
     <div class="hero-card">
       <div class="phone-preview">
         <strong>SMS Preview</strong>
-        <div class="message" style="margin-top:14px;">
+        <div class="message">
           Hi Sarah, thanks for choosing Coastal Plumbing. Please leave a quick review:
           revupdigital.com.au/review
         </div>
@@ -394,8 +398,8 @@
         <span>review requests</span>
       </div>
       <div class="stat">
-        <strong>24/7</strong>
-        <span>feedback capture</span>
+        <strong>AU + NZ</strong>
+        <span>phone number support</span>
       </div>
     </div>
   </section>
@@ -429,7 +433,7 @@
 
   <section>
     <div class="section-title">
-      <h2>Built for local businesses</h2>
+      <h2>Built for local service businesses</h2>
       <p>Perfect for trades, clinics, gyms, salons, car detailers, agencies, and service businesses.</p>
     </div>
 
@@ -446,28 +450,52 @@
 
       <div class="card">
         <h3>Better feedback</h3>
-        <p>See what went wrong and improve the customer experience over time.</p>
+        <p>See what went wrong privately and improve the customer experience over time.</p>
       </div>
     </div>
   </section>
 
   <section id="pricing">
     <div class="section-title">
-      <h2>Simple pricing</h2>
-      <p>Start small, prove it works, then grow with it.</p>
+      <h2>Simple pricing that protects your margins</h2>
+      <p>Start with the plan that fits your monthly review volume. SMS limits reset each month.</p>
     </div>
 
-    <div class="pricing">
-      <h3>RevUp Starter</h3>
-      <div class="price">$49 <span>/ month</span></div>
-      <div class="list">
-        ✔ SMS review requests<br>
-        ✔ Google review redirect<br>
-        ✔ Private feedback dashboard<br>
-        ✔ Email notifications<br>
-        ✔ Custom business review link
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Basic</h3>
+        <div class="price">$29 <span>/ month</span></div>
+        <div class="sms-quota">150 SMS included per month</div>
+
+        <div class="list">
+          ✔ SMS review requests<br>
+          ✔ Google review redirect<br>
+          ✔ Private feedback dashboard<br>
+          ✔ Email notifications<br>
+          ✔ Custom business review link<br>
+          ✔ Usage tracking
+        </div>
+
+        <a href="/signup.html" class="btn btn-primary">Start Basic</a>
       </div>
-      <a href="/signup.html" class="btn btn-primary">Start free</a>
+
+      <div class="pricing-card featured">
+        <div class="popular">Best for growing businesses</div>
+        <h3>Pro</h3>
+        <div class="price">$59 <span>/ month</span></div>
+        <div class="sms-quota">400 SMS included per month</div>
+
+        <div class="list">
+          ✔ Everything in Basic<br>
+          ✔ Higher monthly SMS quota<br>
+          ✔ Better for busy teams<br>
+          ✔ Review funnel analytics<br>
+          ✔ Private feedback capture<br>
+          ✔ AU + NZ number support
+        </div>
+
+        <a href="/signup.html" class="btn btn-primary">Start Pro</a>
+      </div>
     </div>
   </section>
 
@@ -480,6 +508,11 @@
       <div class="faq-item">
         <strong>Do I need technical setup?</strong>
         <p>No. Create your business, add your Google review link, and start sending SMS requests.</p>
+      </div>
+
+      <div class="faq-item">
+        <strong>What happens when I hit my SMS limit?</strong>
+        <p>SMS sending pauses until your monthly reset. Your dashboard shows how many SMS you have used.</p>
       </div>
 
       <div class="faq-item">
