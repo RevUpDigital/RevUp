@@ -146,6 +146,17 @@ async function loadBusiness() {
 
     businessData = business;
 
+    // ✅ TRACK ONLY AFTER VALID LOAD
+    fetch("/track-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        businessSlug,
+        customerName: customerName,
+        eventType: "review_link_clicked"
+      })
+    });
+
     document.getElementById("title").innerText =
       `Hi ${customerName}, how was your experience with ${business.businessName}?`;
 
@@ -159,10 +170,38 @@ async function loadBusiness() {
 
 function goodReview() {
   if (!businessData) return;
-  window.location.href = businessData.googleReviewLink;
+
+  // ✅ TRACK EVENT
+  fetch("/track-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      businessSlug,
+      customerName: customerName,
+      eventType: "good_review_clicked"
+    })
+  });
+
+  // ✅ DELAY TO ENSURE TRACKING FIRES
+  setTimeout(() => {
+    window.location.href = businessData.googleReviewLink;
+  }, 150);
 }
 
 function badReview() {
+  if (!businessData) return;
+
+  // ✅ TRACK EVENT
+  fetch("/track-event", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      businessSlug,
+      customerName: customerName,
+      eventType: "bad_review_clicked"
+    })
+  });
+
   const heading = businessData?.feedbackHeading || "We're sorry to hear that";
 
   document.querySelector(".card").innerHTML = `

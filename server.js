@@ -145,6 +145,17 @@ const feedbackSchema = new mongoose.Schema({
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
+const reviewEventSchema = new mongoose.Schema({
+  businessSlug: String,
+  businessName: String,
+  customerName: String,
+  eventType: String,
+  date: { type: Date, default: Date.now }
+});
+
+const ReviewEvent = mongoose.model("ReviewEvent", reviewEventSchema);
+
+
 /* ================= AUTH ================= */
 
 function hasAccess(user) {
@@ -416,6 +427,14 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
       }
     );
 
+    await ReviewEvent.create({
+      businessSlug,
+      businessName: business.businessName,
+      customerName: name,
+      eventType: "sms_sent"
+    });
+
+    
     res.json({ success: true });
   } catch (err) {
     console.log("SMS error:", err);
@@ -442,6 +461,13 @@ app.post("/save-feedback", async (req, res) => {
       feedback,
     });
 
+    await ReviewEvent.create({
+      businessSlug,
+      businessName: business.businessName,
+      customerName: name,
+      eventType: "private_feedback_submitted"
+    });
+
     await resend.emails.send({
       from: "onboarding@resend.dev",
       to: business.email,
@@ -462,6 +488,32 @@ app.get("/get-feedback", requireAuth, requireAccess, async (req, res) => {
   const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
 
   res.json(feedback);
+});
+
+/* ================= TRACKING ================= */
+
+app.post("/track-event", async (req, res) => {
+  const { businessSlug, customerName, eventType } = req.body;
+
+  try {
+    const business = await Business.findOne({ slug: businessSlug });
+
+    if (!business) {
+      return res.status(404).json({ success: false });
+    }
+
+    await ReviewEvent.create({
+      businessSlug,
+      businessName: business.businessName,
+      customerName,
+      eventType
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log("Tracking error:", err);
+    res.status(500).json({ success: false });
+  }
 });
 
 /* ================= START ================= */
