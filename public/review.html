@@ -190,12 +190,18 @@ function goodReview() {
       <p class="small">
         If you had a great experience, we’d really appreciate a 5-star Google review ⭐⭐⭐⭐⭐
         <br><br>
-        It only takes 30 seconds, no login required, and really helps ${businessData.businessName}.
+        Redirecting you now…
       </p>
       <button class="submit" onclick="window.location.href='${businessData.googleReviewLink}'">
-        Leave Google Review
+        Tap here if you’re not redirected
       </button>
     `;
+
+    // 🔥 AUTO REDIRECT (key upgrade)
+    setTimeout(() => {
+      window.location.href = businessData.googleReviewLink;
+    }, 2000);
+
   }, 150);
 }
 
