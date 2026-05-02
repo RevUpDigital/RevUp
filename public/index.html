@@ -189,7 +189,8 @@
     <input id="phone" placeholder="Phone e.g. +61412345678" />
         
     <button id="sendButton" onclick="sendSMS()">Send SMS</button>
-    <button id="upgradeButton" class="upgrade" onclick="upgrade()">Upgrade</button>
+    <button class="upgrade" onclick="upgrade('basic')">Upgrade to Basic ($29)</button>
+    <button class="upgrade" onclick="upgrade('pro')">Upgrade to Pro ($59)</button>
     <button class="secondary" onclick="goToDashboard()">View Dashboard</button>
     <button class="secondary" onclick="switchBusiness()">Switch Business</button>
 
@@ -218,18 +219,21 @@
       const accessBox = document.getElementById("accessBox");
       const activeBox = document.getElementById("activeBox");
       const sendButton = document.getElementById("sendButton");
-      const upgradeButton = document.getElementById("upgradeButton");
+
+      const upgradeButtons = document.querySelectorAll(".upgrade");
 
       if (user.hasAccess) {
         accessBox.style.display = "none";
         activeBox.style.display = "block";
         sendButton.style.display = "block";
-        upgradeButton.style.display = "none";
+
+        upgradeButtons.forEach(btn => btn.style.display = "none");
       } else {
         accessBox.style.display = "block";
         activeBox.style.display = "none";
         sendButton.style.display = "none";
-        upgradeButton.style.display = "block";
+
+        upgradeButtons.forEach(btn => btn.style.display = "block");
       }
     }
 
@@ -255,14 +259,16 @@
       }
     }
 
-    async function upgrade() {
+    async function upgrade(plan = "basic") {
       const status = document.getElementById("status");
       status.innerText = "Opening Stripe Checkout...";
 
       try {
         const res = await fetch("/create-checkout-session", {
           method: "POST",
-          credentials: "include"
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan })
         });
 
         const data = await res.json();
@@ -274,7 +280,7 @@
         }
       } catch (err) {
         console.log("STRIPE ERROR:", err);
-        status.innerText = "❌ Could not connect to Stripe checkout.";
+        status.innerText = "❌ Could not connect to Stripe.";
       }
     }
 
