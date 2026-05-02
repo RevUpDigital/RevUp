@@ -512,7 +512,7 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
       .replaceAll("{{name}}", name)
       .replaceAll("{{reviewLink}}", reviewLink);
 
-    await axios.post(
+    const clicksendResponse = await axios.post(
       "https://rest.clicksend.com/v3/sms/send",
       {
         messages: [{ body: message, to: phone }],
@@ -524,6 +524,8 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
         },
       }
     );
+
+console.log("ClickSend response:", JSON.stringify(clicksendResponse.data, null, 2));
 
     user.smsUsedThisMonth += 1;
 
