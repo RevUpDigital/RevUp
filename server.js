@@ -2,7 +2,7 @@ const path = require("path");
 require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL || "https://www.revupdigital.com.au";
-const STRIPE_PRICE_ID = "price_1TRqKmBNSfcpwTI16biTcHKC";
+const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || "price_1TRqKmBNSfcpwTI16biTcHKC";
 
 const express = require("express");
 const axios = require("axios");
@@ -18,6 +18,70 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+/* ================= STRIPE WEBHOOK ================= */
+/* Must be BEFORE app.use(express.json()) */
+app.post(
+  "/stripe-webhook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        req.headers["stripe-signature"],
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.log("Stripe webhook error:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    try {
+      if (event.type === "checkout.session.completed") {
+        const checkoutSession = event.data.object;
+
+        await User.findOneAndUpdate(
+          { email: checkoutSession.customer_email },
+          {
+            stripeCustomerId: checkoutSession.customer,
+            stripeSubscriptionId: checkoutSession.subscription,
+            subscriptionStatus: "active",
+          }
+        );
+      }
+
+      if (event.type === "customer.subscription.updated") {
+        const subscription = event.data.object;
+
+        await User.findOneAndUpdate(
+          { stripeCustomerId: subscription.customer },
+          {
+            stripeSubscriptionId: subscription.id,
+            subscriptionStatus: subscription.status,
+          }
+        );
+      }
+
+      if (event.type === "customer.subscription.deleted") {
+        const subscription = event.data.object;
+
+        await User.findOneAndUpdate(
+          { stripeCustomerId: subscription.customer },
+          {
+            subscriptionStatus: "canceled",
+          }
+        );
+      }
+
+      res.json({ received: true });
+    } catch (err) {
+      console.log("Webhook database error:", err);
+      res.status(500).json({ error: "Webhook failed" });
+    }
+  }
+);
 
 app.use(express.json());
 app.use(cors());
@@ -53,6 +117,8 @@ const userSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   manualAccess: { type: Boolean, default: false },
   subscriptionStatus: { type: String, default: "none" },
+  stripeCustomerId: String,
+  stripeSubscriptionId: String,
 });
 
 const User = mongoose.model("User", userSchema);
@@ -155,37 +221,62 @@ app.get("/me", async (req, res) => {
   res.json({
     loggedIn: true,
     hasAccess: hasAccess(user),
+    subscriptionStatus: user.subscriptionStatus,
+    isAdmin: user.isAdmin,
+    manualAccess: user.manualAccess,
   });
 });
 
 /* ================= STRIPE ================= */
 
 app.post("/create-checkout-session", requireAuth, async (req, res) => {
-  const user = await User.findById(req.session.userId);
+  try {
+    const user = await User.findById(req.session.userId);
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "subscription",
-    customer_email: user.email,
-    line_items: [
-      {
-        price: STRIPE_PRICE_ID,
-        quantity: 1,
-      },
-    ],
-    success_url: `${BASE_URL}/payment-success`,
-    cancel_url: `${BASE_URL}/index.html`,
-  });
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "subscription",
+      customer_email: user.email,
+      line_items: [
+        {
+          price: STRIPE_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+      success_url: `${BASE_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${BASE_URL}/index.html`,
+    });
 
-  res.json({ url: session.url });
+    res.json({ url: checkoutSession.url });
+  } catch (err) {
+    console.log("Stripe checkout error:", err);
+    res.status(500).json({ error: "Could not create checkout session" });
+  }
 });
 
 app.get("/payment-success", requireAuth, async (req, res) => {
-  await User.findByIdAndUpdate(req.session.userId, {
-    subscriptionStatus: "active",
-  });
+  try {
+    const { session_id } = req.query;
 
-  res.redirect("/index.html");
+    if (!session_id) {
+      return res.redirect("/index.html");
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (checkoutSession.payment_status === "paid") {
+      await User.findByIdAndUpdate(req.session.userId, {
+        stripeCustomerId: checkoutSession.customer,
+        stripeSubscriptionId: checkoutSession.subscription,
+        subscriptionStatus: "active",
+      });
+    }
+
+    res.redirect("/index.html");
+  } catch (err) {
+    console.log("Payment success error:", err);
+    res.redirect("/index.html");
+  }
 });
 
 /* ================= BUSINESS ================= */
@@ -210,33 +301,56 @@ app.post("/create-business", requireAuth, async (req, res) => {
   }
 });
 
+app.get("/business/:slug", async (req, res) => {
+  try {
+    const business = await Business.findOne({ slug: req.params.slug });
+
+    if (!business) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    res.json(business);
+  } catch (err) {
+    res.status(500).json({ error: "Could not load business" });
+  }
+});
+
 /* ================= SMS ================= */
 
 app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
   const { name, phone, businessSlug } = req.body;
 
-  const business = await Business.findOne({ slug: businessSlug });
+  try {
+    const business = await Business.findOne({ slug: businessSlug });
 
-  const reviewLink = `${BASE_URL}/review.html?business=${business.slug}&name=${name}`;
-
-  const message = business.smsMessage
-    .replaceAll("{{name}}", name)
-    .replaceAll("{{reviewLink}}", reviewLink);
-
-  await axios.post(
-    "https://rest.clicksend.com/v3/sms/send",
-    {
-      messages: [{ body: message, to: phone }],
-    },
-    {
-      auth: {
-        username: process.env.CLICKSEND_USERNAME,
-        password: process.env.CLICKSEND_API_KEY,
-      },
+    if (!business) {
+      return res.status(404).json({ success: false, error: "Business not found" });
     }
-  );
 
-  res.json({ success: true });
+    const reviewLink = `${BASE_URL}/review.html?business=${business.slug}&name=${encodeURIComponent(name)}`;
+
+    const message = business.smsMessage
+      .replaceAll("{{name}}", name)
+      .replaceAll("{{reviewLink}}", reviewLink);
+
+    await axios.post(
+      "https://rest.clicksend.com/v3/sms/send",
+      {
+        messages: [{ body: message, to: phone }],
+      },
+      {
+        auth: {
+          username: process.env.CLICKSEND_USERNAME,
+          password: process.env.CLICKSEND_API_KEY,
+        },
+      }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log("SMS error:", err);
+    res.status(500).json({ success: false, error: "Could not send SMS" });
+  }
 });
 
 /* ================= FEEDBACK ================= */
@@ -244,29 +358,38 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
 app.post("/save-feedback", async (req, res) => {
   const { businessSlug, name, feedback } = req.body;
 
-  const business = await Business.findOne({ slug: businessSlug });
+  try {
+    const business = await Business.findOne({ slug: businessSlug });
 
-  await Feedback.create({
-    businessSlug,
-    businessName: business.businessName,
-    name,
-    feedback,
-  });
+    if (!business) {
+      return res.status(404).json({ success: false, error: "Business not found" });
+    }
 
-  await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: business.email,
-    subject: "New Feedback",
-    text: feedback,
-  });
+    await Feedback.create({
+      businessSlug,
+      businessName: business.businessName,
+      name,
+      feedback,
+    });
 
-  res.json({ success: true });
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: business.email,
+      subject: "New Feedback",
+      text: feedback,
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log("Feedback error:", err);
+    res.status(500).json({ success: false });
+  }
 });
 
 app.get("/get-feedback", requireAuth, requireAccess, async (req, res) => {
   const { businessSlug } = req.query;
 
-  const feedback = await Feedback.find({ businessSlug });
+  const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
 
   res.json(feedback);
 });

@@ -106,6 +106,40 @@
       background: #e2e8f0;
     }
 
+    .upgrade {
+      background: #635bff;
+      color: white;
+    }
+
+    .upgrade:hover {
+      background: #5148e5;
+    }
+
+    .access-box {
+      display: none;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .active-box {
+      display: none;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
     #status {
       margin-top: 14px;
       font-size: 14px;
@@ -128,10 +162,19 @@
     <h3>Send Review SMS</h3>
     <div class="subtitle" id="businessSubtitle">Loading business...</div>
 
+    <div id="activeBox" class="active-box">
+      ✅ Pro Active — you can send SMS review requests.
+    </div>
+
+    <div id="accessBox" class="access-box">
+      Your account does not have Pro access yet. Upgrade to send SMS review requests.
+    </div>
+
     <input id="name" placeholder="Customer Name" />
     <input id="phone" placeholder="Phone e.g. +61412345678" />
         
-    <button onclick="sendSMS()">Send SMS</button>
+    <button id="sendButton" onclick="sendSMS()">Send SMS</button>
+    <button id="upgradeButton" class="upgrade" onclick="upgrade()">Upgrade to Pro</button>
     <button class="secondary" onclick="goToDashboard()">View Dashboard</button>
     <button class="secondary" onclick="switchBusiness()">Switch Business</button>
 
@@ -139,6 +182,8 @@
   </div>
 
   <script>
+    let currentUser = null;
+
     async function checkLogin() {
       const res = await fetch("/me");
       const user = await res.json();
@@ -148,7 +193,52 @@
         return false;
       }
 
+      currentUser = user;
+      updateAccessUI(user);
+
       return true;
+    }
+
+    function updateAccessUI(user) {
+      const accessBox = document.getElementById("accessBox");
+      const activeBox = document.getElementById("activeBox");
+      const sendButton = document.getElementById("sendButton");
+      const upgradeButton = document.getElementById("upgradeButton");
+
+      if (user.hasAccess) {
+        accessBox.style.display = "none";
+        activeBox.style.display = "block";
+        sendButton.style.display = "block";
+        upgradeButton.style.display = "none";
+      } else {
+        accessBox.style.display = "block";
+        activeBox.style.display = "none";
+        sendButton.style.display = "none";
+        upgradeButton.style.display = "block";
+      }
+    }
+
+    async function upgrade() {
+      const status = document.getElementById("status");
+      status.innerText = "Opening Stripe Checkout...";
+
+      try {
+        const res = await fetch("/create-checkout-session", {
+          method: "POST",
+          credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          status.innerText = "❌ " + (data.error || "Could not start checkout.");
+        }
+      } catch (err) {
+        console.log("STRIPE ERROR:", err);
+        status.innerText = "❌ Could not connect to Stripe checkout.";
+      }
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -194,6 +284,11 @@
       const phone = document.getElementById("phone").value.trim();
       const status = document.getElementById("status");
 
+      if (!currentUser || !currentUser.hasAccess) {
+        status.innerText = "❌ Please upgrade to Pro before sending SMS.";
+        return;
+      }
+
       if (!name || !phone) {
         status.innerText = "❌ Please enter customer name and phone.";
         return;
@@ -221,7 +316,11 @@
           document.getElementById("name").value = "";
           document.getElementById("phone").value = "";
         } else {
-          status.innerText = "❌ Failed: " + JSON.stringify(data.error);
+          if (res.status === 403) {
+            status.innerText = "❌ Your account needs Pro access to send SMS.";
+          } else {
+            status.innerText = "❌ Failed: " + JSON.stringify(data.error);
+          }
         }
 
       } catch (err) {
