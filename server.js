@@ -2,7 +2,8 @@ const path = require("path");
 require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL || "https://www.revupdigital.com.au";
-const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || "price_1TRqKmBNSfcpwTI16biTcHKC";
+const STRIPE_BASIC_PRICE_ID = process.env.STRIPE_BASIC_PRICE_ID;
+const STRIPE_PRO_PRICE_ID = process.env.STRIPE_PRO_PRICE_ID;
 
 const express = require("express");
 const axios = require("axios");
@@ -42,12 +43,15 @@ app.post(
       if (event.type === "checkout.session.completed") {
         const checkoutSession = event.data.object;
 
+        const plan = checkoutSession.metadata?.plan || "basic";
+
         await User.findOneAndUpdate(
           { email: checkoutSession.customer_email },
           {
             stripeCustomerId: checkoutSession.customer,
             stripeSubscriptionId: checkoutSession.subscription,
             subscriptionStatus: "active",
+            plan,
           }
         );
       }
@@ -55,11 +59,24 @@ app.post(
       if (event.type === "customer.subscription.updated") {
         const subscription = event.data.object;
 
+        const priceId = subscription.items?.data?.[0]?.price?.id;
+
+        let plan = "basic";
+
+        if (priceId === STRIPE_PRO_PRICE_ID) {
+          plan = "pro";
+        }
+
+        if (priceId === STRIPE_BASIC_PRICE_ID) {
+          plan = "basic";
+        }
+
         await User.findOneAndUpdate(
           { stripeCustomerId: subscription.customer },
           {
             stripeSubscriptionId: subscription.id,
             subscriptionStatus: subscription.status,
+            plan,
           }
         );
       }
@@ -317,17 +334,38 @@ app.post("/update-profile", requireAuth, async (req, res) => {
 app.post("/create-checkout-session", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId);
+    const { plan } = req.body;
+
+    const selectedPlan = plan === "pro" ? "pro" : "basic";
+
+    const priceId =
+      selectedPlan === "pro"
+        ? STRIPE_PRO_PRICE_ID
+        : STRIPE_BASIC_PRICE_ID;
+
+    if (!priceId) {
+      return res.status(500).json({
+        error: `Missing Stripe price ID for ${selectedPlan} plan`,
+      });
+    }
 
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
       customer_email: user.email,
+      client_reference_id: user._id.toString(),
+      metadata: {
+        plan: selectedPlan,
+      },
       subscription_data: {
         trial_period_days: 7,
+        metadata: {
+          plan: selectedPlan,
+        },
       },
       line_items: [
         {
-          price: STRIPE_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
