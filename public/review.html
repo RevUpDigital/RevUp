@@ -190,7 +190,7 @@ function goodReview() {
       <p class="small">
         If you had a great experience, we’d really appreciate a 5-star Google review ⭐⭐⭐⭐⭐
         <br><br>
-        Redirecting you now…
+        Redirecting you in a few seconds…
       </p>
       <button class="submit" onclick="window.location.href='${businessData.googleReviewLink}'">
         Tap here if you’re not redirected
@@ -200,7 +200,7 @@ function goodReview() {
     // 🔥 AUTO REDIRECT (key upgrade)
     setTimeout(() => {
       window.location.href = businessData.googleReviewLink;
-    }, 2000);
+    }, 5000);
 
   }, 150);
 }
@@ -224,7 +224,7 @@ function badReview() {
   document.querySelector(".card").innerHTML = `
     <div class="logo">RevUp</div>
     <h2>${heading}</h2>
-    <p class="small">Please tell us what went wrong:</p>
+    <p class="small">Please tell us how we can improve</p>
     <textarea id="feedback" rows="4"></textarea>
     <button class="submit" onclick="submitFeedback()">Submit feedback</button>
   `;
