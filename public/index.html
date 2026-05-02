@@ -165,18 +165,18 @@
     <div class="subtitle" id="businessSubtitle">Loading business...</div>
 
     <div id="activeBox" class="active-box">
-      ✅ Pro Active — you can send SMS review requests.
+      ✅ Active — you can send SMS review requests.
     </div>
 
     <div id="accessBox" class="access-box">
-      Your account does not have Pro access yet. Upgrade to send SMS review requests.
+      Your account does not have access yet. Upgrade to send SMS review requests.
     </div>
 
     <input id="name" placeholder="Customer Name" />
     <input id="phone" placeholder="Phone e.g. +61412345678" />
         
     <button id="sendButton" onclick="sendSMS()">Send SMS</button>
-    <button id="upgradeButton" class="upgrade" onclick="upgrade()">Upgrade to Pro</button>
+    <button id="upgradeButton" class="upgrade" onclick="upgrade()">Upgrade</button>
     <button class="secondary" onclick="goToDashboard()">View Dashboard</button>
     <button class="secondary" onclick="switchBusiness()">Switch Business</button>
 
@@ -287,7 +287,7 @@
       const status = document.getElementById("status");
 
       if (!currentUser || !currentUser.hasAccess) {
-        status.innerText = "❌ Please upgrade to Pro before sending SMS.";
+        status.innerText = "❌ Please upgrade before sending SMS.";
         return;
       }
 
@@ -314,15 +314,23 @@
         const data = await res.json();
 
         if (data.success) {
-          status.innerText = "✅ SMS sent successfully.";
+          if (data.smsLimit === "unlimited" || data.smsRemaining === "unlimited") {
+            status.innerText = "✅ SMS sent successfully. Unlimited SMS available.";
+          } else {
+            status.innerText = `✅ SMS sent successfully. ${data.smsRemaining} SMS remaining this month.`;
+          }
+
           document.getElementById("name").value = "";
           document.getElementById("phone").value = "";
         } else {
-          if (res.status === 403) {
-            status.innerText = "❌ Your account needs Pro access to send SMS.";
-          } else {
-            status.innerText = "❌ Failed: " + JSON.stringify(data.error);
+          let errorMessage = data.error || "Failed to send SMS.";
+
+          // Remove accidental quotes like "message"
+          if (typeof errorMessage === "string") {
+            errorMessage = errorMessage.replace(/^"(.*)"$/, "$1");
           }
+
+          status.innerText = "❌ " + errorMessage;
         }
 
       } catch (err) {

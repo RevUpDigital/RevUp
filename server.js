@@ -116,7 +116,15 @@ const userSchema = new mongoose.Schema({
   password: String,
   isAdmin: { type: Boolean, default: false },
   manualAccess: { type: Boolean, default: false },
+
   subscriptionStatus: { type: String, default: "none" },
+  plan: { type: String, default: "basic" },
+
+  smsUsedThisMonth: { type: Number, default: 0 },
+  smsResetDate: { type: Date, default: Date.now },
+  smsWarning80Sent: { type: Boolean, default: false },
+  smsWarning100Sent: { type: Boolean, default: false },
+
   stripeCustomerId: String,
   stripeSubscriptionId: String,
 });
@@ -398,10 +406,100 @@ app.get("/business/:slug", async (req, res) => {
 
 /* ================= SMS ================= */
 
+const PLAN_LIMITS = {
+  basic: 150,
+  pro: 400,
+};
+
+function getSmsLimit(user) {
+  if (user.isAdmin) return Infinity;
+
+  return PLAN_LIMITS[user.plan] || PLAN_LIMITS.basic;
+}
+
+function isAllowedPhoneNumber(phone) {
+  return phone.startsWith("+61") || phone.startsWith("+64");
+}
+
+function needsSmsReset(user) {
+  const now = new Date();
+  const resetDate = new Date(user.smsResetDate);
+
+  return (
+    now.getMonth() !== resetDate.getMonth() ||
+    now.getFullYear() !== resetDate.getFullYear()
+  );
+}
+
+async function resetSmsIfNeeded(user) {
+  if (!needsSmsReset(user)) return;
+
+  user.smsUsedThisMonth = 0;
+  user.smsResetDate = new Date();
+  user.smsWarning80Sent = false;
+  user.smsWarning100Sent = false;
+
+  await user.save();
+}
+
+async function sendSmsUsageEmail(user, type, used, limit) {
+  if (!user.email || limit === Infinity) return;
+
+  let subject = "";
+  let text = "";
+
+  if (type === "80") {
+    subject = "RevUp SMS usage warning";
+    text = `You have used ${used}/${limit} SMS this month. You are getting close to your monthly SMS limit.`;
+  }
+
+  if (type === "100") {
+    subject = "RevUp SMS limit reached";
+    text = `You have reached your monthly SMS limit of ${limit} SMS. SMS sending is now paused until your monthly reset.`;
+  }
+
+  await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: user.email,
+    subject,
+    text,
+  });
+}
+
 app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
   const { name, phone, businessSlug } = req.body;
 
   try {
+    const user = await User.findById(req.session.userId);
+
+    if (!user) {
+      return res.status(401).json({ success: false, error: "User not found" });
+    }
+
+    if (!isAllowedPhoneNumber(phone)) {
+      return res.status(400).json({
+        success: false,
+        error: "Only Australian (+61) and New Zealand (+64) phone numbers are allowed.",
+      });
+    }
+
+    await resetSmsIfNeeded(user);
+
+    const smsLimit = getSmsLimit(user);
+
+    if (user.smsUsedThisMonth >= smsLimit) {
+      if (!user.smsWarning100Sent && smsLimit !== Infinity) {
+        await sendSmsUsageEmail(user, "100", user.smsUsedThisMonth, smsLimit);
+        user.smsWarning100Sent = true;
+        await user.save();
+      }
+
+      return res.status(403).json({
+        success: false,
+        error: `SMS limit reached. You have used ${user.smsUsedThisMonth}/${smsLimit} SMS this month.`,
+      });
+    }
+
     const business = await Business.findOne({ slug: businessSlug });
 
     if (!business) {
@@ -427,21 +525,48 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
       }
     );
 
+    user.smsUsedThisMonth += 1;
+
+    const usagePercent = user.smsUsedThisMonth / smsLimit;
+
+    if (
+      smsLimit !== Infinity &&
+      usagePercent >= 0.8 &&
+      !user.smsWarning80Sent
+    ) {
+      await sendSmsUsageEmail(user, "80", user.smsUsedThisMonth, smsLimit);
+      user.smsWarning80Sent = true;
+    }
+
+    if (
+      smsLimit !== Infinity &&
+      user.smsUsedThisMonth >= smsLimit &&
+      !user.smsWarning100Sent
+    ) {
+      await sendSmsUsageEmail(user, "100", user.smsUsedThisMonth, smsLimit);
+      user.smsWarning100Sent = true;
+    }
+
+    await user.save();
+
     await ReviewEvent.create({
       businessSlug,
       businessName: business.businessName,
       customerName: name,
-      eventType: "sms_sent"
+      eventType: "sms_sent",
     });
 
-    
-    res.json({ success: true });
+    res.json({
+      success: true,
+      smsUsedThisMonth: user.smsUsedThisMonth,
+      smsLimit,
+      smsRemaining: smsLimit === Infinity ? "unlimited" : smsLimit - user.smsUsedThisMonth,
+    });
   } catch (err) {
     console.log("SMS error:", err);
     res.status(500).json({ success: false, error: "Could not send SMS" });
   }
 });
-
 /* ================= FEEDBACK ================= */
 
 app.post("/save-feedback", async (req, res) => {
