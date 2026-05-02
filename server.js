@@ -557,6 +557,7 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
 
     const message = business.smsMessage
       .replaceAll("{{name}}", name)
+      .replaceAll("{{businessName}}", business.businessName)
       .replaceAll("{{reviewLink}}", reviewLink);
 
     const clicksendResponse = await axios.post(
