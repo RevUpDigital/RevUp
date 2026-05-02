@@ -72,6 +72,17 @@
       margin-bottom: 18px;
     }
 
+    .usage-box {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      color: #334155;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
     input, button {
       width: 100%;
       padding: 12px;
@@ -172,6 +183,8 @@
       Your account does not have access yet. Upgrade to send SMS review requests.
     </div>
 
+    <div id="usageInfo" class="usage-box">Loading SMS usage...</div>
+
     <input id="name" placeholder="Customer Name" />
     <input id="phone" placeholder="Phone e.g. +61412345678" />
         
@@ -217,6 +230,28 @@
         activeBox.style.display = "none";
         sendButton.style.display = "none";
         upgradeButton.style.display = "block";
+      }
+    }
+
+    async function loadUsage() {
+      const usageInfo = document.getElementById("usageInfo");
+
+      try {
+        const res = await fetch("/user-usage");
+        const usage = await res.json();
+
+        if (!res.ok) {
+          usageInfo.innerText = "SMS usage unavailable.";
+          return;
+        }
+
+        if (usage.smsLimit === "unlimited") {
+          usageInfo.innerText = `SMS Used: ${usage.smsUsed} / Unlimited`;
+        } else {
+          usageInfo.innerText = `SMS Used: ${usage.smsUsed}/${usage.smsLimit} — ${usage.smsRemaining} remaining`;
+        }
+      } catch (err) {
+        usageInfo.innerText = "SMS usage unavailable.";
       }
     }
 
@@ -273,7 +308,6 @@
 
         document.querySelector("h3").innerText = "Send Review SMS";
         businessSubtitle.innerText = `Sending as ${business.businessName}`;
-
       } catch (err) {
         console.log("LOAD BUSINESS ERROR:", err);
         businessSubtitle.innerText = "Could not load business.";
@@ -322,17 +356,19 @@
 
           document.getElementById("name").value = "";
           document.getElementById("phone").value = "";
+
+          loadUsage();
         } else {
           let errorMessage = data.error || "Failed to send SMS.";
 
-          // Remove accidental quotes like "message"
           if (typeof errorMessage === "string") {
             errorMessage = errorMessage.replace(/^"(.*)"$/, "$1");
           }
 
           status.innerText = "❌ " + errorMessage;
-        }
 
+          loadUsage();
+        }
       } catch (err) {
         console.log("FETCH ERROR:", err);
         status.innerText = "❌ Cannot connect to server.";
@@ -351,6 +387,7 @@
     checkLogin().then((loggedIn) => {
       if (loggedIn) {
         loadBusiness();
+        loadUsage();
       }
     });
   </script>

@@ -525,7 +525,18 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
       }
     );
 
-console.log("ClickSend response:", JSON.stringify(clicksendResponse.data, null, 2));
+    console.log("ClickSend response:", JSON.stringify(clicksendResponse.data, null, 2));
+
+    const messageResult = clicksendResponse.data?.data?.messages?.[0];
+
+    if (!messageResult || messageResult.status !== "SUCCESS") {
+      console.log("SMS failed:", messageResult);
+
+      return res.status(400).json({
+        success: false,
+        error: messageResult?.status || "SMS failed to send",
+      });
+    }
 
     user.smsUsedThisMonth += 1;
 
@@ -561,12 +572,36 @@ console.log("ClickSend response:", JSON.stringify(clicksendResponse.data, null, 
     res.json({
       success: true,
       smsUsedThisMonth: user.smsUsedThisMonth,
-      smsLimit,
+      smsLimit: smsLimit === Infinity ? "unlimited" : smsLimit,
       smsRemaining: smsLimit === Infinity ? "unlimited" : smsLimit - user.smsUsedThisMonth,
     });
   } catch (err) {
     console.log("SMS error:", err);
     res.status(500).json({ success: false, error: "Could not send SMS" });
+  }
+});
+
+app.get("/user-usage", requireAuth, requireAccess, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    await resetSmsIfNeeded(user);
+
+    const smsLimit = getSmsLimit(user);
+
+    res.json({
+      smsUsed: user.smsUsedThisMonth,
+      smsLimit: smsLimit === Infinity ? "unlimited" : smsLimit,
+      smsRemaining: smsLimit === Infinity ? "unlimited" : Math.max(smsLimit - user.smsUsedThisMonth, 0),
+      plan: user.plan || "basic",
+    });
+  } catch (err) {
+    console.log("Usage error:", err);
+    res.status(500).json({ error: "Could not load usage" });
   }
 });
 /* ================= FEEDBACK ================= */
