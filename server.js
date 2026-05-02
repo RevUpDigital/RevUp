@@ -303,6 +303,9 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
       payment_method_types: ["card"],
       mode: "subscription",
       customer_email: user.email,
+      subscription_data: {
+        trial_period_days: 7,
+      },
       line_items: [
         {
           price: STRIPE_PRICE_ID,
@@ -322,6 +325,28 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
 
 app.get("/payment-success", requireAuth, async (req, res) => {
   res.redirect("/index.html");
+});
+
+app.post("/create-billing-portal-session", requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+
+    if (!user || !user.stripeCustomerId) {
+      return res.status(400).json({
+        error: "No Stripe customer found. Please subscribe first.",
+      });
+    }
+
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: `${BASE_URL}/profile.html`,
+    });
+
+    res.json({ url: portalSession.url });
+  } catch (err) {
+    console.log("Billing portal error:", err);
+    res.status(500).json({ error: "Could not open billing portal" });
+  }
 });
 
 /* ================= BUSINESS ================= */

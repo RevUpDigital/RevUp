@@ -193,6 +193,7 @@
       <input id="newPassword" type="password" placeholder="Leave blank to keep current password" />
 
       <button onclick="updateProfile()">Save Changes</button>
+      <button class="secondary" onclick="openBilling()">Manage Billing</button>
       <button class="secondary" onclick="goToApp()">Back to App</button>
       <button class="danger" onclick="logout()">Logout</button>
 
@@ -203,6 +204,33 @@
 
   <script>
     let businessSlug = localStorage.getItem("businessSlug");
+
+    async function openBilling() {
+      const error = document.getElementById("error");
+      const success = document.getElementById("success");
+
+      error.innerText = "";
+      success.innerText = "Opening billing portal...";
+
+      try {
+        const res = await fetch("/create-billing-portal-session", {
+          method: "POST",
+        });
+
+        const data = await res.json();
+
+        if (!data.url) {
+          success.innerText = "";
+          error.innerText = data.error || "Could not open billing portal.";
+          return;
+        }
+
+        window.location.href = data.url;
+      } catch (err) {
+        success.innerText = "";
+        error.innerText = "Could not connect to billing portal.";
+      }
+    }
 
     async function loadProfile() {
       try {
