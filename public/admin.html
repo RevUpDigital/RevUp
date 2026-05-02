@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RevUp Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f8fafc;
+      padding: 40px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .stat {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+    }
+
+    .business {
+      margin-top: 10px;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>RevUp Admin Dashboard</h1>
+
+<div class="card">
+  <h2>Global Stats</h2>
+  <div class="grid" id="globalStats"></div>
+</div>
+
+<div class="card">
+  <h2>Business Stats</h2>
+  <div id="businessStats"></div>
+</div>
+
+<script>
+async function loadStats() {
+  const res = await fetch("/admin-stats");
+  const data = await res.json();
+
+  const g = data.global;
+
+  document.getElementById("globalStats").innerHTML = `
+    <div class="stat"><strong>${g.smsSent}</strong>SMS Sent</div>
+    <div class="stat"><strong>${g.linkClicked}</strong>Link Clicks</div>
+    <div class="stat"><strong>${g.goodClicks}</strong>Google Redirects</div>
+    <div class="stat"><strong>${g.badClicks}</strong>Bad Clicks</div>
+    <div class="stat"><strong>${g.feedback}</strong>Feedback</div>
+  `;
+
+  const businesses = data.businesses;
+
+  let html = "";
+
+  Object.values(businesses).forEach(b => {
+    const clickRate = b.smsSent ? ((b.linkClicked / b.smsSent) * 100).toFixed(1) : 0;
+    const positiveRate = b.linkClicked ? ((b.goodClicks / b.linkClicked) * 100).toFixed(1) : 0;
+
+    html += `
+      <div class="business">
+        <strong>${b.businessName}</strong><br>
+        SMS: ${b.smsSent} |
+        Clicks: ${b.linkClicked} (${clickRate}%) |
+        Google: ${b.goodClicks} (${positiveRate}%) |
+        Bad: ${b.badClicks} |
+        Feedback: ${b.feedback}
+      </div>
+    `;
+  });
+
+  document.getElementById("businessStats").innerHTML = html;
+}
+
+loadStats();
+</script>
+
+</body>
+</html>

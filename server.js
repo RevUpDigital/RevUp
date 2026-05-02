@@ -516,6 +516,60 @@ app.post("/track-event", async (req, res) => {
   }
 });
 
+/* ================= ADMIN ================= */
+
+app.get("/admin-stats", requireAuth, async (req, res) => {
+  const user = await User.findById(req.session.userId);
+
+  if (!user.isAdmin) {
+    return res.status(403).json({ error: "No access" });
+  }
+
+  const events = await ReviewEvent.find();
+
+  const globalStats = {
+    smsSent: 0,
+    linkClicked: 0,
+    goodClicks: 0,
+    badClicks: 0,
+    feedback: 0
+  };
+
+  const businessStats = {};
+
+  events.forEach(e => {
+    if (e.eventType === "sms_sent") globalStats.smsSent++;
+    if (e.eventType === "review_link_clicked") globalStats.linkClicked++;
+    if (e.eventType === "good_review_clicked") globalStats.goodClicks++;
+    if (e.eventType === "bad_review_clicked") globalStats.badClicks++;
+    if (e.eventType === "private_feedback_submitted") globalStats.feedback++;
+
+    if (!businessStats[e.businessSlug]) {
+      businessStats[e.businessSlug] = {
+        businessName: e.businessName,
+        smsSent: 0,
+        linkClicked: 0,
+        goodClicks: 0,
+        badClicks: 0,
+        feedback: 0
+      };
+    }
+
+    const b = businessStats[e.businessSlug];
+
+    if (e.eventType === "sms_sent") b.smsSent++;
+    if (e.eventType === "review_link_clicked") b.linkClicked++;
+    if (e.eventType === "good_review_clicked") b.goodClicks++;
+    if (e.eventType === "bad_review_clicked") b.badClicks++;
+    if (e.eventType === "private_feedback_submitted") b.feedback++;
+  });
+
+  res.json({
+    global: globalStats,
+    businesses: businessStats
+  });
+});
+
 /* ================= START ================= */
 
 const PORT = process.env.PORT || 3000;
