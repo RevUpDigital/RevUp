@@ -334,7 +334,7 @@ app.post("/update-profile", requireAuth, async (req, res) => {
 app.post("/create-checkout-session", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId);
-    const { plan } = req.body;
+    const plan = req.body?.plan || "basic";
 
     const selectedPlan = plan === "pro" ? "pro" : "basic";
 
