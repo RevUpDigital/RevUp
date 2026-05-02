@@ -184,7 +184,17 @@ function goodReview() {
 
   // ✅ DELAY TO ENSURE TRACKING FIRES
   setTimeout(() => {
-    window.location.href = businessData.googleReviewLink;
+    document.querySelector(".card").innerHTML = `
+      <div class="logo">RevUp</div>
+      <h2>Awesome — thanks, ${customerName}!</h2>
+      <p class="small">
+        Please leave ${businessData.businessName} a quick Google review.
+        It only takes 30 seconds and really helps their business.
+      </p>
+      <button class="submit" onclick="window.location.href='${businessData.googleReviewLink}'">
+        Leave Google Review
+      </button>
+    `;
   }, 150);
 }
 
