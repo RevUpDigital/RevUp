@@ -276,6 +276,7 @@ async function handleSubmit() {
     result.innerText = isEditMode ? "✅ Changes saved!" : "✅ Business created!";
 
     setTimeout(() => {
+      localStorage.setItem("businessSlug", existingSlug);
       window.location.href = `/index.html?business=${existingSlug}`;
     }, 1200);
 

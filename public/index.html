@@ -386,9 +386,11 @@
 
     const params = new URLSearchParams(window.location.search);
 
-    let businessSlug = localStorage.getItem("businessSlug");
+    let businessSlug = params.get("business") || localStorage.getItem("businessSlug");
 
-    if (!businessSlug) {
+    if (businessSlug) {
+      localStorage.setItem("businessSlug", businessSlug);
+    } else {
       window.location.href = "/signup.html";
     }
 
