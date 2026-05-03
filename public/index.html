@@ -267,7 +267,14 @@
     <div id="usageInfo" class="usage-box">Loading SMS usage...</div>
 
     <input id="name" placeholder="Customer Name" />
-    <input id="phone" placeholder="Phone e.g. +61412345678" />
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <select id="countryCode" style="width:100px; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
+        <option value="+61">AU +61</option>
+        <option value="+64">NZ +64</option>
+      </select>
+
+      <input id="phone" placeholder="e.g. 412 345 678" style="flex:1;" />
+    </div>
         
     <button id="sendButton" onclick="sendSMS()">Send SMS</button>
     <button class="upgrade" onclick="upgrade('basic')">Upgrade to Basic ($29)</button>
@@ -412,7 +419,32 @@
 
     async function sendSMS() {
       const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
+      
+      const rawPhone = document.getElementById("phone").value.trim();
+      const countryCode = document.getElementById("countryCode").value;
+
+      let cleaned = rawPhone.replace(/\s+/g, "").replace(/-/g, "");
+
+      // remove + if user includes it
+      if (cleaned.startsWith("+")) {
+        cleaned = cleaned.substring(1);
+      }
+
+      // remove leading country code if user types it manually
+      if (cleaned.startsWith("61")) {
+        cleaned = cleaned.substring(2);
+      }
+      if (cleaned.startsWith("64")) {
+        cleaned = cleaned.substring(2);
+      }
+
+      // remove leading 0
+      if (cleaned.startsWith("0")) {
+        cleaned = cleaned.substring(1);
+      }
+
+      const phone = countryCode + cleaned;
+
       const status = document.getElementById("status");
 
       if (!currentUser || !currentUser.hasAccess) {
@@ -420,7 +452,7 @@
         return;
       }
 
-      if (!name || !phone) {
+      if (!name || !rawPhone) {
         status.innerText = "❌ Please enter customer name and phone.";
         return;
       }
@@ -449,10 +481,13 @@
             status.innerText = `✅ SMS sent successfully. ${data.smsRemaining} SMS remaining this month.`;
           }
 
+          // Reset form
           document.getElementById("name").value = "";
           document.getElementById("phone").value = "";
+          document.getElementById("countryCode").value = "+61";
 
           loadUsage();
+
         } else {
           let errorMessage = data.error || "Failed to send SMS.";
 
@@ -464,6 +499,7 @@
 
           loadUsage();
         }
+        
       } catch (err) {
         console.log("FETCH ERROR:", err);
         status.innerText = "❌ Cannot connect to server.";
