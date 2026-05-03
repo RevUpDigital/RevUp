@@ -469,6 +469,48 @@ app.post("/create-business", requireAuth, async (req, res) => {
   }
 });
 
+app.get("/my-business", requireAuth, async (req, res) => {
+  try {
+    const business = await Business.findOne({ userId: req.session.userId });
+
+    if (!business) {
+      return res.json({ success: true, business: null });
+    }
+
+    res.json({ success: true, business });
+  } catch (err) {
+    console.log("My business error:", err);
+    res.status(500).json({ success: false, error: "Could not load business" });
+  }
+});
+
+app.post("/update-business", requireAuth, async (req, res) => {
+  const { businessName, email, googleReviewLink, smsMessage } = req.body;
+
+  try {
+    const business = await Business.findOne({ userId: req.session.userId });
+
+    if (!business) {
+      return res.status(404).json({
+        success: false,
+        error: "No business found to update.",
+      });
+    }
+
+    business.businessName = businessName;
+    business.email = email;
+    business.googleReviewLink = googleReviewLink;
+    business.smsMessage = smsMessage;
+
+    await business.save();
+
+    res.json({ success: true, business });
+  } catch (err) {
+    console.log("Update business error:", err);
+    res.status(500).json({ success: false, error: "Could not update business" });
+  }
+});
+
 app.get("/business/:slug", async (req, res) => {
   try {
     const business = await Business.findOne({ slug: req.params.slug });

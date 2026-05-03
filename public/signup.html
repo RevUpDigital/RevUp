@@ -1,7 +1,8 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-  <title>RevUp - Create Your Business</title>
+  <title>RevUp - Business Settings</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -43,13 +44,6 @@
     }
 
     .nav-links a:hover { color: #2563eb; }
-
-    .nav-cta {
-      background: #2563eb;
-      color: white !important;
-      padding: 10px 16px;
-      border-radius: 999px;
-    }
 
     .page {
       min-height: calc(100vh - 72px);
@@ -144,17 +138,8 @@
       color: #16a34a;
       font-weight: 700;
     }
-
-    @media (max-width: 700px) {
-      .nav { padding: 16px 20px; }
-      .nav-links a {
-        margin-left: 12px;
-        font-size: 13px;
-      }
-      .card { padding: 28px; }
-      h1 { font-size: 30px; }
-    }
   </style>
+
 </head>
 
 <body>
@@ -163,69 +148,83 @@
   <a href="/" class="logo">RevUp 🚀</a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="/index.html">Send SMS</a>
-    <a href="/signup.html" class="nav-cta">Start free</a>
+    <a href="/index.html">Dashboard</a>
   </div>
 </div>
 
 <div class="page">
   <div class="card">
-    <div class="badge">Create your review funnel</div>
+    <div class="badge" id="badgeText">Create your review funnel</div>
 
-    <h1>Create your business</h1>
-    <p>Set up your business profile, add your Google review link, and start sending SMS review requests.</p>
+```
+<h1 id="title">Create your business</h1>
+<p id="subtitle">Set up your business profile, add your Google review link, and start sending SMS review requests.</p>
 
-    <label for="businessName">Business name</label>
-    <input id="businessName" placeholder="e.g. Coastal Plumbing" />
+<label>Business name</label>
+<input id="businessName" />
 
-    <label for="email">Business email</label>
-    <input id="email" placeholder="e.g. hello@business.com" />
+<label>Business email</label>
+<input id="email" />
 
-    <label for="googleReviewLink">Google review link</label>
-    <input id="googleReviewLink" placeholder="Paste your Google review link" />
+<label>Google review link</label>
+<input id="googleReviewLink" />
 
-    <label for="smsMessage">SMS message</label>
-    <textarea id="smsMessage">Hi {{name}}, thanks for choosing {{businessName}}. We’d really appreciate a quick review: {{reviewLink}}</textarea>
+<label>SMS message</label>
+<textarea id="smsMessage"></textarea>
 
-    <button onclick="createBusiness()">Create Business</button>
+<button id="submitBtn" onclick="handleSubmit()">Create Business</button>
 
-    <div id="error" class="error"></div>
-    <div id="result" class="result"></div>
+<div id="error" class="error"></div>
+<div id="result" class="result"></div>
+```
+
   </div>
 </div>
 
 <script>
-async function checkLogin() {
+let isEditMode = false;
+let existingSlug = null;
+
+async function init() {
   const res = await fetch("/me");
   const user = await res.json();
 
   if (!user.loggedIn) {
     window.location.href = "/register.html";
-    return false;
+    return;
   }
 
-  return true;
-}
+  const businessRes = await fetch("/my-business");
+  const data = await businessRes.json();
 
-checkLogin().then((loggedIn) => {
-  if (!loggedIn) return;
-});
+  if (data.business) {
+    isEditMode = true;
+    existingSlug = data.business.slug;
+
+    document.getElementById("title").innerText = "Edit your business";
+    document.getElementById("badgeText").innerText = "Business settings";
+    document.getElementById("submitBtn").innerText = "Save Changes";
+
+    document.getElementById("businessName").value = data.business.businessName || "";
+    document.getElementById("email").value = data.business.email || "";
+    document.getElementById("googleReviewLink").value = data.business.googleReviewLink || "";
+    document.getElementById("smsMessage").value = data.business.smsMessage || "";
+  } else {
+    document.getElementById("smsMessage").value =
+      "Hi {{name}}, thanks for choosing {{businessName}}. We’d really appreciate a quick review: {{reviewLink}}";
+  }
+}
 
 function createSlug(text) {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+  return text.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
 }
 
-async function createBusiness() {
+async function handleSubmit() {
   const businessName = document.getElementById("businessName").value.trim();
   const email = document.getElementById("email").value.trim();
   const googleReviewLink = document.getElementById("googleReviewLink").value.trim();
   const smsMessage = document.getElementById("smsMessage").value.trim();
-  
+
   const error = document.getElementById("error");
   const result = document.getElementById("result");
 
@@ -237,46 +236,57 @@ async function createBusiness() {
     return;
   }
 
-  const slug = createSlug(businessName);
-
   try {
-    const res = await fetch("/create-business", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        businessName,
-        slug,
-        email,
-        googleReviewLink,
-        smsMessage
-      })
-    });
+    let res;
+
+    if (isEditMode) {
+      res = await fetch("/update-business", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName,
+          email,
+          googleReviewLink,
+          smsMessage
+        })
+      });
+    } else {
+      const slug = createSlug(businessName);
+
+      res = await fetch("/create-business", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName,
+          slug,
+          email,
+          googleReviewLink,
+          smsMessage
+        })
+      });
+
+      existingSlug = slug;
+    }
 
     const data = await res.json();
 
     if (!data.success) {
-      if (data.error === "duplicate") {
-        error.innerText = "❌ Business already exists. Try another name.";
-      } else {
-        error.innerText = data.error || "Something went wrong.";
-      }
+      error.innerText = data.error || "Something went wrong.";
       return;
     }
 
-    result.innerText = "✅ Creating your dashboard...";
-
-    localStorage.setItem("businessSlug", slug);
+    result.innerText = isEditMode ? "✅ Changes saved!" : "✅ Business created!";
 
     setTimeout(() => {
-      window.location.href = `/index.html?business=${slug}`;
+      window.location.href = `/index.html?business=${existingSlug}`;
     }, 1200);
 
   } catch (err) {
     error.innerText = "Could not connect to server.";
   }
 }
+
+init();
 </script>
 
 </body>
