@@ -232,7 +232,7 @@
     <div class="nav-links">
       <a href="/">Home</a>
       <a id="appLink" href="/index.html">Send SMS</a>
-      <a href="/profile.html">Profile</a>
+      <a href="/profile.html" id="userNav">Account</a>
       <a href="/logout">Logout</a>
     </div>
   </div>
@@ -277,6 +277,14 @@
     async function checkLogin() {
       const res = await fetch("/me");
       const user = await res.json();
+
+      if (user.loggedIn && user.email) {
+        const nav = document.getElementById("userNav");
+        if (nav) {
+          const name = user.email.split("@")[0];
+          nav.innerText = name + " ▼";
+        }
+      }
 
       if (!user.loggedIn) {
         window.location.href = "/login.html";
