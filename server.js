@@ -19,6 +19,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 const resend = new Resend(process.env.RESEND_API_KEY);
+const EMAIL_FROM = "RevUp <noreply@revupdigital.com.au>";
+
 
 /* ================= STRIPE WEBHOOK ================= */
 /* Must be BEFORE app.use(express.json()) */
@@ -506,7 +508,7 @@ async function sendSmsUsageEmail(user, type, used, limit) {
   }
 
   await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: EMAIL_FROM,
     to: user.email,
     subject,
     text,
@@ -679,10 +681,24 @@ app.post("/save-feedback", async (req, res) => {
     });
 
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: EMAIL_FROM,
       to: business.email,
-      subject: "New Feedback",
-      text: feedback,
+      subject: `New private feedback for ${business.businessName}`,
+      text: `
+Hi,
+
+You’ve received new private feedback for ${business.businessName}.
+
+Customer: ${name || "Unknown customer"}
+
+Feedback:
+"${feedback}"
+
+View your dashboard:
+${BASE_URL}/dashboard.html?business=${business.slug}
+
+— RevUp
+`,
     });
 
     res.json({ success: true });
@@ -690,14 +706,6 @@ app.post("/save-feedback", async (req, res) => {
     console.log("Feedback error:", err);
     res.status(500).json({ success: false });
   }
-});
-
-app.get("/get-feedback", requireAuth, requireAccess, async (req, res) => {
-  const { businessSlug } = req.query;
-
-  const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
-
-  res.json(feedback);
 });
 
 /* ================= TRACKING ================= */
