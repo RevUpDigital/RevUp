@@ -30,7 +30,12 @@
       text-decoration: none;
     }
 
-    .nav a {
+    .nav-links {
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-links a {
       margin-left: 22px;
       color: #334155;
       text-decoration: none;
@@ -38,8 +43,81 @@
       font-size: 14px;
     }
 
-    .nav a:hover {
+    .nav-links a:hover {
       color: #2563eb;
+    }
+
+    .account-menu {
+      position: relative;
+      display: inline-block;
+      margin-left: 22px;
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+    }
+
+    .avatar-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .account-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 44px;
+      width: 220px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 20px 50px rgba(15,23,42,0.14);
+      padding: 10px;
+      z-index: 99;
+    }
+
+    .account-dropdown.show {
+      display: block;
+    }
+
+    .account-dropdown a,
+    .account-dropdown button {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      color: #334155;
+      text-decoration: none;
+      background: white;
+      border: none;
+      text-align: left;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .account-dropdown a:hover,
+    .account-dropdown button:hover {
+      background: #f1f5f9;
+      color: #2563eb;
+    }
+
+    .account-email {
+      font-size: 13px;
+      color: #64748b;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 6px;
+      word-break: break-word;
     }
 
     .page {
@@ -156,18 +234,41 @@
       font-size: 14px;
       font-weight: 700;
     }
+
+    @media (max-width: 800px) {
+      .nav { padding: 16px 20px; }
+
+      .nav-links a {
+        margin-left: 12px;
+        font-size: 13px;
+      }
+
+      .account-menu {
+        margin-left: 12px;
+      }
+    }
   </style>
 </head>
 
 <body>
   <div class="nav">
     <a href="/" class="logo">RevUp 🚀</a>
-    <div>
-        <a href="/">Home</a>
-        <a href="/index.html">Send SMS</a>
-        <a href="#" onclick="goToDashboard()">Dashboard</a>
-        <a href="/profile.html" id="userNav">Account</a>
-        <a href="#" onclick="logout()">Logout</a>     
+
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/index.html">Send SMS</a>
+      <a href="#" onclick="goToDashboard()">Dashboard</a>
+
+      <div class="account-menu">
+        <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn">A</button>
+
+        <div class="account-dropdown" id="accountDropdown">
+          <div class="account-email" id="accountEmail">Account</div>
+          <a href="/profile.html">Profile settings</a>
+          <a href="/signup.html">Business settings</a>
+          <button onclick="logout()">Logout</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -238,10 +339,15 @@
         const user = await res.json();
 
         if (user.loggedIn && user.email) {
-          const nav = document.getElementById("userNav");
-          if (nav) {
-            const name = user.email.split("@")[0];
-            nav.innerText = name + " ▼";
+          const avatar = document.getElementById("avatarBtn");
+          const accountEmail = document.getElementById("accountEmail");
+
+          if (avatar) {
+            avatar.innerText = user.email.charAt(0).toUpperCase();
+          }
+
+          if (accountEmail) {
+            accountEmail.innerText = user.email;
           }
         }
 
@@ -254,14 +360,14 @@
         document.getElementById("email").value = user.email || "";
 
         const subMap = {
-            active: "Pro Active",
-            trialing: "Trial",
-            canceled: "Cancelled",
-            none: "Free"
-            };
+          active: "Pro Active",
+          trialing: "Trial",
+          canceled: "Cancelled",
+          none: "Free"
+        };
 
         document.getElementById("subscriptionStatus").innerText =
-        subMap[user.subscriptionStatus] || user.subscriptionStatus || "Free";
+          subMap[user.subscriptionStatus] || user.subscriptionStatus || "Free";
 
         document.getElementById("accessStatus").innerText =
           user.hasAccess ? "Active" : "No access";
@@ -336,12 +442,24 @@
     }
 
     function goToDashboard() {
-    if (businessSlug) {
+      if (businessSlug) {
         window.location.href = `/dashboard.html?business=${businessSlug}`;
-    } else {
+      } else {
         window.location.href = "/signup.html";
+      }
     }
+
+    function toggleAccountMenu() {
+      document.getElementById("accountDropdown").classList.toggle("show");
     }
+
+    window.addEventListener("click", function(e) {
+      const menu = document.querySelector(".account-menu");
+
+      if (menu && !menu.contains(e.target)) {
+        document.getElementById("accountDropdown").classList.remove("show");
+      }
+    });
 
     loadProfile();
   </script>
