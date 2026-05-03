@@ -320,6 +320,74 @@
       font-size: 14px;
     }
 
+    .account-menu {
+      position: relative;
+      display: inline-block;
+      margin-left: 16px;
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .avatar-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .account-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 44px;
+      width: 220px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 20px 50px rgba(15,23,42,0.14);
+      padding: 10px;
+      z-index: 99;
+    }
+
+    .account-dropdown.show {
+      display: block;
+    }
+
+    .account-dropdown a,
+    .account-dropdown button {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      color: #334155;
+      text-decoration: none;
+      background: white;
+      border: none;
+      text-align: left;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .account-dropdown a:hover,
+    .account-dropdown button:hover {
+      background: #f1f5f9;
+      color: #2563eb;
+    }
+
+    .account-email {
+      font-size: 13px;
+      color: #64748b;
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 6px;
+    }
+
     @media (max-width: 850px) {
       .hero, .grid-3, .stats, .pricing-grid {
         grid-template-columns: 1fr;
@@ -343,12 +411,30 @@
 
   <div class="nav">
     <div class="logo">RevUp 🚀</div>
-    <div class="nav-links">
-      <a href="#how">How it works</a>
-      <a href="#pricing">Pricing</a>
-      <a href="/index.html">Login</a>
-      <a href="/signup.html" class="nav-cta">Start free</a>
+    <div class="nav-links" id="navLinks">
+  <a href="#how">How it works</a>
+  <a href="#pricing">Pricing</a>
+
+  <span id="loggedOutNav">
+    <a href="/index.html">Login</a>
+    <a href="/signup.html" class="nav-cta">Start free</a>
+  </span>
+
+  <span id="loggedInNav" style="display:none;">
+    <a href="/index.html">Send SMS</a>
+
+    <div class="account-menu">
+      <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn">A</button>
+
+      <div class="account-dropdown" id="accountDropdown">
+        <div class="account-email" id="accountEmail">Account</div>
+        <a href="/profile.html">Profile settings</a>
+        <a href="/signup.html">Business settings</a>
+        <button onclick="logout()">Logout</button>
+      </div>
     </div>
+  </span>
+</div>
   </div>
 
   <div class="hero">
@@ -539,5 +625,54 @@
     © 2026 RevUp Digital. Built for local businesses.
   </footer>
 
+  <script>
+  async function checkLogin() {
+    try {
+      const res = await fetch("/me");
+      const user = await res.json();
+
+      if (user.loggedIn) {
+        document.getElementById("loggedOutNav").style.display = "none";
+        document.getElementById("loggedInNav").style.display = "inline-block";
+
+        const avatar = document.getElementById("avatarBtn");
+        const accountEmail = document.getElementById("accountEmail");
+
+        if (avatar) {
+          avatar.innerText = user.email.charAt(0).toUpperCase();
+        }
+
+        if (accountEmail) {
+          accountEmail.innerText = user.email;
+        }
+      }
+    } catch (err) {
+      console.log("Login check failed");
+    }
+  }
+
+  function toggleAccountMenu() {
+    document.getElementById("accountDropdown").classList.toggle("show");
+  }
+
+  window.addEventListener("click", function(e) {
+    const menu = document.querySelector(".account-menu");
+    if (menu && !menu.contains(e.target)) {
+      document.getElementById("accountDropdown").classList.remove("show");
+    }
+  });
+
+  async function logout() {
+    try {
+      await fetch("/logout", { method: "POST" });
+      localStorage.clear();
+      window.location.reload();
+    } catch (err) {
+      window.location.href = "/logout";
+    }
+  }
+
+  checkLogin();
+</script>
 </body>
 </html>
