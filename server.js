@@ -708,6 +708,23 @@ ${BASE_URL}/dashboard.html?business=${business.slug}
   }
 });
 
+app.get("/get-feedback", requireAuth, requireAccess, async (req, res) => {
+  try {
+    const { businessSlug } = req.query;
+
+    if (!businessSlug) {
+      return res.status(400).json({ error: "Business slug required" });
+    }
+
+    const feedback = await Feedback.find({ businessSlug }).sort({ date: -1 });
+
+    res.json(feedback);
+  } catch (err) {
+    console.log("Get feedback error:", err);
+    res.status(500).json({ error: "Could not load feedback" });
+  }
+});
+
 /* ================= TRACKING ================= */
 
 app.post("/track-event", async (req, res) => {
