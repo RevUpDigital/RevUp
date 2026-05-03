@@ -226,7 +226,37 @@ app.post("/register", async (req, res) => {
 
     req.session.userId = user._id;
 
+    // 🔥 Send welcome email
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: user.email,
+        subject: "Welcome to RevUp 🚀",
+        text: `
+Hi,
+
+Thanks for joining RevUp.
+
+You can now start collecting 5-star reviews automatically.
+
+Next steps:
+1. Send your first SMS
+2. Customer clicks link
+3. Reviews + feedback start coming in
+
+Get started here:
+${BASE_URL}/index.html
+
+— RevUp
+    `
+      });
+    } catch (err) {
+      console.log("Welcome email error:", err);
+    }
+
     res.json({ success: true });
+
+
   } catch (err) {
     if (err.code === 11000) {
       return res.json({ success: false, error: "duplicate" });
