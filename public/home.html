@@ -45,6 +45,30 @@
 
     .nav-links a:hover { color: #2563eb; }
 
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 22px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .nav-links a {
+      margin-left: 0;
+    }
+
+    #loggedOutNav,
+    #loggedInNav {
+      align-items: center;
+      gap: 22px;
+      white-space: nowrap;
+    }
+
+    #loggedOutNav {
+      display: flex;
+    }
+
     .nav-cta {
       background: #2563eb;
       color: white !important;
@@ -325,7 +349,7 @@
     .account-menu {
       position: relative;
       display: inline-block;
-      margin-left: 16px;
+      margin-left: 0;
     }
 
     .avatar-btn {
@@ -422,11 +446,11 @@
 
       .nav-links {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: flex-end;
         align-items: center;
-        gap: 8px 14px;
-        max-width: 250px;
+        gap: 14px;
+        max-width: none;
       }
 
       .nav-links a {
@@ -473,15 +497,15 @@
   <a href="#pricing" class="marketing-nav-link">Pricing</a>
 
   <span id="loggedOutNav">
-    <a href="/index.html">Login</a>
-    <a href="/signup.html" class="nav-cta">Start free</a>
+    <a href="/login.html">Login</a>
+    <a href="/register.html" class="nav-cta">Start free</a>
   </span>
 
   <span id="loggedInNav" style="display:none;">
     <a href="/index.html">Send SMS</a>
 
     <div class="account-menu">
-      <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn">A</button>
+      <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn"></button>
 
       <div class="account-dropdown" id="accountDropdown">
         <div class="account-email" id="accountEmail">Account</div>
@@ -504,7 +528,7 @@
       </p>
 
       <div class="buttons">
-        <a href="/signup.html" class="btn btn-primary">Start free</a>
+        <a href="/register.html" class="btn btn-primary">Start free</a>
         <a href="#pricing" class="btn btn-secondary">View pricing</a>
       </div>
     </div>
@@ -704,13 +728,11 @@
         document.body.classList.add("logged-in");
         document.getElementById("loggedOutNav").style.display = "none";
         document.getElementById("loggedInNav").style.display = "flex";
-        document.getElementById("loggedInNav").style.alignItems = "center";
-        document.getElementById("loggedInNav").style.gap = "14px";
 
         const avatar = document.getElementById("avatarBtn");
         const accountEmail = document.getElementById("accountEmail");
 
-        if (avatar) {
+        if (avatar && user.email) {
           avatar.innerText = user.email.charAt(0).toUpperCase();
         }
 
