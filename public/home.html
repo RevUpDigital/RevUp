@@ -31,8 +31,6 @@
       font-size: 22px;
       font-weight: 800;
       color: #2563eb;
-      white-space: nowrap;
-      line-height: 1;
     }
 
     .nav-links a {
@@ -44,30 +42,6 @@
     }
 
     .nav-links a:hover { color: #2563eb; }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 22px;
-      flex-wrap: nowrap;
-      white-space: nowrap;
-    }
-
-    .nav-links a {
-      margin-left: 0;
-    }
-
-    #loggedOutNav,
-    #loggedInNav {
-      align-items: center;
-      gap: 22px;
-      white-space: nowrap;
-    }
-
-    #loggedOutNav {
-      display: flex;
-    }
 
     .nav-cta {
       background: #2563eb;
@@ -291,6 +265,44 @@
       font-weight: 800;
     }
 
+
+    .trial-banner {
+      max-width: 920px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, #eff6ff, #ffffff);
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 10px 30px rgba(37,99,235,0.08);
+    }
+
+    .trial-banner strong {
+      display: block;
+      color: #1d4ed8;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .trial-banner span {
+      color: #64748b;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .trial-pill {
+      background: #2563eb;
+      color: white;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .list {
       text-align: left;
       margin: 24px 0;
@@ -349,7 +361,7 @@
     .account-menu {
       position: relative;
       display: inline-block;
-      margin-left: 0;
+      margin-left: 16px;
     }
 
     .avatar-btn {
@@ -433,45 +445,29 @@
 
       .nav {
         padding: 16px 20px;
-        align-items: center;
-        gap: 12px;
+        align-items: flex-start;
+        gap: 10px;
       }
 
       .logo {
         white-space: nowrap;
-        line-height: 1;
+        line-height: 1.1;
         font-size: 20px;
-        flex-shrink: 0;
       }
 
       .nav-links {
         display: flex;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         justify-content: flex-end;
         align-items: center;
-        gap: 14px;
-        max-width: none;
+        gap: 8px 10px;
+        max-width: 235px;
       }
 
       .nav-links a {
         margin-left: 0;
-        font-size: 13px;
+        font-size: 12px;
         white-space: nowrap;
-      }
-
-      body.logged-in .marketing-nav-link {
-        display: none;
-      }
-
-      body.logged-in .nav-links {
-        flex-wrap: nowrap;
-        max-width: none;
-      }
-
-      body.logged-in #loggedInNav {
-        display: flex !important;
-        align-items: center;
-        gap: 14px;
       }
 
       .nav-cta {
@@ -483,128 +479,15 @@
       .nav-cta {
         display: none;
       }
-    }
 
-  
-
-    /* ===== RevUp consistent navigation lock ===== */
-    .nav {
-      height: 72px !important;
-      min-height: 72px !important;
-      padding: 0 40px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      gap: 24px !important;
-      flex-wrap: nowrap !important;
-      box-sizing: border-box !important;
-    }
-
-    .logo {
-      display: inline-flex !important;
-      align-items: center !important;
-      white-space: nowrap !important;
-      line-height: 1 !important;
-      font-size: 22px !important;
-      font-weight: 800 !important;
-      color: #2563eb !important;
-      text-decoration: none !important;
-      flex-shrink: 0 !important;
-    }
-
-    .nav-links,
-    .nav > div:last-child {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: flex-end !important;
-      gap: 22px !important;
-      flex-wrap: nowrap !important;
-      white-space: nowrap !important;
-      min-width: 0 !important;
-    }
-
-    .nav a,
-    .nav-links a {
-      margin-left: 0 !important;
-      font-size: 14px !important;
-      line-height: 1 !important;
-      font-weight: 600 !important;
-      color: #334155;
-      text-decoration: none;
-      white-space: nowrap !important;
-    }
-
-    .nav a:hover,
-    .nav-links a:hover {
-      color: #2563eb !important;
-    }
-
-    .account-menu {
-      margin-left: 0 !important;
-      flex-shrink: 0 !important;
-    }
-
-    .avatar-btn {
-      width: 36px !important;
-      height: 36px !important;
-      min-width: 36px !important;
-      min-height: 36px !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border-radius: 999px !important;
-      font-size: 14px !important;
-      line-height: 1 !important;
-    }
-
-    #loggedOutNav,
-    #loggedInNav {
-      align-items: center !important;
-      gap: 22px !important;
-      flex-wrap: nowrap !important;
-      white-space: nowrap !important;
-    }
-
-    @media (max-width: 700px) {
-      .nav {
-        height: 76px !important;
-        min-height: 76px !important;
-        padding: 0 20px !important;
-        gap: 14px !important;
+      .trial-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px;
       }
 
-      .logo {
-        font-size: 22px !important;
-      }
-
-      .nav-links,
-      .nav > div:last-child {
-        gap: 14px !important;
-      }
-
-      .nav a,
-      .nav-links a {
-        font-size: 14px !important;
-      }
-    }
-
-
-    /* Home only: keep logged-in desktop nav on one line; simplify mobile logged-in nav */
-    #loggedInNav {
-      flex-wrap: nowrap !important;
-      white-space: nowrap !important;
-    }
-
-    @media (max-width: 700px) {
-      body.logged-in .marketing-nav-link {
-        display: none !important;
-      }
-
-      body.logged-in #loggedInNav {
-        display: flex !important;
-        gap: 14px !important;
+      .trial-pill {
+        white-space: normal;
       }
     }
 
@@ -616,19 +499,19 @@
   <div class="nav">
     <div class="logo">RevUp 🚀</div>
     <div class="nav-links" id="navLinks">
-  <a href="#how" class="marketing-nav-link">How it works</a>
-  <a href="#pricing" class="marketing-nav-link">Pricing</a>
+  <a href="#how">How it works</a>
+  <a href="#pricing">Pricing</a>
 
   <span id="loggedOutNav">
-    <a href="/login.html">Login</a>
-    <a href="/register.html" class="nav-cta">Start free</a>
+    <a href="/index.html">Login</a>
+    <a href="/signup.html" class="nav-cta">Start free</a>
   </span>
 
   <span id="loggedInNav" style="display:none;">
     <a href="/index.html">Send SMS</a>
 
     <div class="account-menu">
-      <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn"></button>
+      <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn">A</button>
 
       <div class="account-dropdown" id="accountDropdown">
         <div class="account-email" id="accountEmail">Account</div>
@@ -651,7 +534,7 @@
       </p>
 
       <div class="buttons">
-        <a href="/register.html" class="btn btn-primary">Start free</a>
+        <a href="/signup.html" class="btn btn-primary">Start free</a>
         <a href="#pricing" class="btn btn-secondary">View pricing</a>
       </div>
     </div>
@@ -751,11 +634,21 @@
       <p>Start with the plan that fits your monthly review volume. SMS limits reset each month.</p>
     </div>
 
+
+    <div class="trial-banner">
+      <div>
+        <strong>Start with a 7-day free trial</strong>
+        <span>Try RevUp before paying. Set up your review funnel, send your first SMS requests, and see how it works for your business.</span>
+      </div>
+      <div class="trial-pill">7 days free</div>
+    </div>
+
     <div class="pricing-grid">
       <div class="pricing-card">
         <h3>Basic</h3>
         <div class="price">$29 <span>/ month</span></div>
         <div class="sms-quota">150 SMS included per month</div>
+        <p style="margin: -6px 0 16px; color:#64748b; font-size:14px;">Includes your 7-day free trial.</p>
 
         <div class="list">
           ✔ SMS review requests<br>
@@ -774,6 +667,7 @@
         <h3>Pro</h3>
         <div class="price">$59 <span>/ month</span></div>
         <div class="sms-quota">400 SMS included per month</div>
+        <p style="margin: -6px 0 16px; color:#64748b; font-size:14px;">Includes your 7-day free trial.</p>
 
         <div class="list">
           ✔ Everything in Basic<br>
@@ -848,14 +742,13 @@
       const user = await res.json();
 
       if (user.loggedIn) {
-        document.body.classList.add("logged-in");
         document.getElementById("loggedOutNav").style.display = "none";
-        document.getElementById("loggedInNav").style.display = "flex";
+        document.getElementById("loggedInNav").style.display = "inline-block";
 
         const avatar = document.getElementById("avatarBtn");
         const accountEmail = document.getElementById("accountEmail");
 
-        if (avatar && user.email) {
+        if (avatar) {
           avatar.innerText = user.email.charAt(0).toUpperCase();
         }
 
