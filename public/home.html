@@ -435,6 +435,21 @@
         white-space: nowrap;
       }
 
+      body.logged-in .marketing-nav-link {
+        display: none;
+      }
+
+      body.logged-in .nav-links {
+        flex-wrap: nowrap;
+        max-width: none;
+      }
+
+      body.logged-in #loggedInNav {
+        display: flex !important;
+        align-items: center;
+        gap: 14px;
+      }
+
       .nav-cta {
         order: 10;
         margin-left: auto !important;
@@ -454,8 +469,8 @@
   <div class="nav">
     <div class="logo">RevUp 🚀</div>
     <div class="nav-links" id="navLinks">
-  <a href="#how">How it works</a>
-  <a href="#pricing">Pricing</a>
+  <a href="#how" class="marketing-nav-link">How it works</a>
+  <a href="#pricing" class="marketing-nav-link">Pricing</a>
 
   <span id="loggedOutNav">
     <a href="/index.html">Login</a>
@@ -686,8 +701,11 @@
       const user = await res.json();
 
       if (user.loggedIn) {
+        document.body.classList.add("logged-in");
         document.getElementById("loggedOutNav").style.display = "none";
-        document.getElementById("loggedInNav").style.display = "inline-block";
+        document.getElementById("loggedInNav").style.display = "flex";
+        document.getElementById("loggedInNav").style.alignItems = "center";
+        document.getElementById("loggedInNav").style.gap = "14px";
 
         const avatar = document.getElementById("avatarBtn");
         const accountEmail = document.getElementById("accountEmail");
