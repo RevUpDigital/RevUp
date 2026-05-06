@@ -125,6 +125,39 @@
       font-weight: 700;
       text-decoration: none;
     }
+
+    @media (max-width: 700px) {
+      .nav {
+        padding: 16px 20px;
+        align-items: center;
+      }
+
+      .logo {
+        white-space: nowrap;
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .nav > div {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .nav a {
+        margin-left: 0;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .nav-cta {
+        display: none;
+      }
+
+      .page {
+        padding: 50px 20px;
+      }
+    }
   </style>
 </head>
 

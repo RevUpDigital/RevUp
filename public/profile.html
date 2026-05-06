@@ -28,6 +28,8 @@
       font-weight: 800;
       color: #2563eb;
       text-decoration: none;
+      white-space: nowrap;
+      line-height: 1;
     }
 
     .nav-links {
@@ -238,13 +240,19 @@
     @media (max-width: 800px) {
       .nav { padding: 16px 20px; }
 
+      .nav-links {
+        flex-wrap: nowrap;
+        gap: 12px;
+      }
+
       .nav-links a {
-        margin-left: 12px;
+        margin-left: 0;
         font-size: 13px;
+        white-space: nowrap;
       }
 
       .account-menu {
-        margin-left: 12px;
+        margin-left: 0;
       }
     }
   </style>
