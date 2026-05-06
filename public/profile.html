@@ -255,6 +255,111 @@
         margin-left: 0;
       }
     }
+  
+
+    /* ===== RevUp consistent navigation lock ===== */
+    .nav {
+      height: 72px !important;
+      min-height: 72px !important;
+      padding: 0 40px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 24px !important;
+      flex-wrap: nowrap !important;
+      box-sizing: border-box !important;
+    }
+
+    .logo {
+      display: inline-flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+      line-height: 1 !important;
+      font-size: 22px !important;
+      font-weight: 800 !important;
+      color: #2563eb !important;
+      text-decoration: none !important;
+      flex-shrink: 0 !important;
+    }
+
+    .nav-links,
+    .nav > div:last-child {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 22px !important;
+      flex-wrap: nowrap !important;
+      white-space: nowrap !important;
+      min-width: 0 !important;
+    }
+
+    .nav a,
+    .nav-links a {
+      margin-left: 0 !important;
+      font-size: 14px !important;
+      line-height: 1 !important;
+      font-weight: 600 !important;
+      color: #334155;
+      text-decoration: none;
+      white-space: nowrap !important;
+    }
+
+    .nav a:hover,
+    .nav-links a:hover {
+      color: #2563eb !important;
+    }
+
+    .account-menu {
+      margin-left: 0 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .avatar-btn {
+      width: 36px !important;
+      height: 36px !important;
+      min-width: 36px !important;
+      min-height: 36px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border-radius: 999px !important;
+      font-size: 14px !important;
+      line-height: 1 !important;
+    }
+
+    #loggedOutNav,
+    #loggedInNav {
+      align-items: center !important;
+      gap: 22px !important;
+      flex-wrap: nowrap !important;
+      white-space: nowrap !important;
+    }
+
+    @media (max-width: 700px) {
+      .nav {
+        height: 76px !important;
+        min-height: 76px !important;
+        padding: 0 20px !important;
+        gap: 14px !important;
+      }
+
+      .logo {
+        font-size: 22px !important;
+      }
+
+      .nav-links,
+      .nav > div:last-child {
+        gap: 14px !important;
+      }
+
+      .nav a,
+      .nav-links a {
+        font-size: 14px !important;
+      }
+    }
+
   </style>
 </head>
 
