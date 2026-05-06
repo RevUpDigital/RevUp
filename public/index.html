@@ -432,8 +432,6 @@
 
     if (businessSlug) {
       localStorage.setItem("businessSlug", businessSlug);
-    } else {
-      window.location.href = "/signup.html";
     }
 
     async function loadBusiness() {
@@ -441,12 +439,43 @@
       const businessSubtitle = document.getElementById("businessSubtitle");
 
       try {
+        // If there is no business slug in the URL/localStorage, get the logged-in user's business.
+        // This stops existing users being sent to the edit business page after login.
+        if (!businessSlug) {
+          const myBusinessRes = await fetch("/my-business");
+          const myBusinessData = await myBusinessRes.json();
+
+          if (!myBusinessData.business) {
+            window.location.href = "/signup.html";
+            return;
+          }
+
+          businessSlug = myBusinessData.business.slug;
+          localStorage.setItem("businessSlug", businessSlug);
+
+          document.querySelector("h3").innerText = "Send Review SMS";
+          businessSubtitle.innerText = `Sending as ${myBusinessData.business.businessName}`;
+          return;
+        }
+
         const res = await fetch(`/business/${businessSlug}`);
         const business = await res.json();
 
         if (!res.ok) {
-          businessSubtitle.innerText = "Business not found.";
-          status.innerText = "❌ Business not found. Please switch business.";
+          // Saved slug may be old or wrong. Try the logged-in user's current business before redirecting.
+          const myBusinessRes = await fetch("/my-business");
+          const myBusinessData = await myBusinessRes.json();
+
+          if (myBusinessData.business) {
+            businessSlug = myBusinessData.business.slug;
+            localStorage.setItem("businessSlug", businessSlug);
+
+            document.querySelector("h3").innerText = "Send Review SMS";
+            businessSubtitle.innerText = `Sending as ${myBusinessData.business.businessName}`;
+            return;
+          }
+
+          window.location.href = "/signup.html";
           return;
         }
 
