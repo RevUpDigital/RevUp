@@ -45,6 +45,80 @@
 
     .nav-links a:hover { color: #2563eb; }
 
+    .account-menu {
+      position: relative;
+      display: inline-block;
+      margin-left: 22px;
+    }
+
+    .avatar-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: none;
+      background: #2563eb;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+    }
+
+    .avatar-btn:hover {
+      background: #1d4ed8;
+    }
+
+    .account-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 48px;
+      width: 220px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      padding: 8px;
+      z-index: 99;
+    }
+
+    .account-dropdown.show {
+      display: block;
+    }
+
+    .account-dropdown a,
+    .account-dropdown button {
+      display: block;
+      width: 100%;
+      padding: 10px 12px;
+      color: #334155;
+      text-decoration: none;
+      background: white;
+      border: none;
+      text-align: left;
+      font-weight: 400;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0 !important;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .account-dropdown a:hover,
+    .account-dropdown button:hover {
+      background: #eef2ff;
+      color: #2563eb;
+    }
+
+    .account-email {
+      font-size: 13px;
+      color: #64748b;
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 6px;
+    }
+
     .page {
       min-height: calc(100vh - 72px);
       display: flex;
@@ -153,7 +227,19 @@
   <a href="/" class="logo">RevUp 🚀</a>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="/index.html">Dashboard</a>
+    <a href="/index.html" id="sendSmsLink">Send SMS</a>
+    <a href="#" onclick="goToDashboard()">Dashboard</a>
+
+    <div class="account-menu">
+      <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn">A</button>
+
+      <div class="account-dropdown" id="accountDropdown">
+        <div class="account-email" id="accountEmail">Account</div>
+        <a href="/profile.html">Profile settings</a>
+        <a href="/signup.html">Business settings</a>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -197,6 +283,19 @@ async function init() {
     return;
   }
 
+  if (user.email) {
+    const avatar = document.getElementById("avatarBtn");
+    const accountEmail = document.getElementById("accountEmail");
+
+    if (avatar) {
+      avatar.innerText = user.email.charAt(0).toUpperCase();
+    }
+
+    if (accountEmail) {
+      accountEmail.innerText = user.email;
+    }
+  }
+
   const businessRes = await fetch("/my-business");
   const data = await businessRes.json();
 
@@ -212,6 +311,9 @@ async function init() {
     document.getElementById("email").value = data.business.email || "";
     document.getElementById("googleReviewLink").value = data.business.googleReviewLink || "";
     document.getElementById("smsMessage").value = data.business.smsMessage || "";
+
+    localStorage.setItem("businessSlug", existingSlug);
+    document.getElementById("sendSmsLink").href = `/index.html?business=${existingSlug}`;
   } else {
     document.getElementById("title").innerText = "Create your business";
     document.getElementById("badgeText").innerText = "Create your review funnel";
@@ -295,6 +397,36 @@ async function handleSubmit() {
     error.innerText = "Could not connect to server.";
   }
 }
+
+function goToDashboard() {
+  if (existingSlug) {
+    window.location.href = `/dashboard.html?business=${existingSlug}`;
+  } else {
+    window.location.href = "/dashboard.html";
+  }
+}
+
+async function logout() {
+  try {
+    await fetch("/logout", { method: "POST" });
+    localStorage.clear();
+    window.location.href = "/login.html";
+  } catch (err) {
+    window.location.href = "/logout";
+  }
+}
+
+function toggleAccountMenu() {
+  document.getElementById("accountDropdown").classList.toggle("show");
+}
+
+window.addEventListener("click", function(e) {
+  const menu = document.querySelector(".account-menu");
+
+  if (menu && !menu.contains(e.target)) {
+    document.getElementById("accountDropdown").classList.remove("show");
+  }
+});
 
 init();
 </script>
