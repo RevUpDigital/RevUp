@@ -388,10 +388,27 @@
 
     let businessSlug = params.get("business") || localStorage.getItem("businessSlug");
 
-    if (businessSlug) {
-      localStorage.setItem("businessSlug", businessSlug);
-    } else {
+    async function resolveBusinessSlug() {
+      if (businessSlug) {
+        localStorage.setItem("businessSlug", businessSlug);
+        return true;
+      }
+
+      try {
+        const res = await fetch("/my-business");
+        const data = await res.json();
+
+        if (data.business && data.business.slug) {
+          businessSlug = data.business.slug;
+          localStorage.setItem("businessSlug", businessSlug);
+          return true;
+        }
+      } catch (err) {
+        console.log("MY BUSINESS ERROR:", err);
+      }
+
       window.location.href = "/signup.html";
+      return false;
     }
 
     async function loadBusiness() {
@@ -537,8 +554,12 @@
       }
     });
 
-    checkLogin().then((loggedIn) => {
-      if (loggedIn) {
+    checkLogin().then(async (loggedIn) => {
+      if (!loggedIn) return;
+
+      const hasBusiness = await resolveBusinessSlug();
+
+      if (hasBusiness) {
         loadBusiness();
         loadUsage();
       }

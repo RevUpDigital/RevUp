@@ -51,6 +51,11 @@
       justify-content: center;
       align-items: center;
       padding: 60px 20px;
+      visibility: hidden;
+    }
+
+    .page.ready {
+      visibility: visible;
     }
 
     .card {
@@ -208,9 +213,15 @@ async function init() {
     document.getElementById("googleReviewLink").value = data.business.googleReviewLink || "";
     document.getElementById("smsMessage").value = data.business.smsMessage || "";
   } else {
+    document.getElementById("title").innerText = "Create your business";
+    document.getElementById("badgeText").innerText = "Create your review funnel";
+    document.getElementById("submitBtn").innerText = "Create Business";
+
     document.getElementById("smsMessage").value =
       "Hi {{name}}, thanks for choosing {{businessName}}. We’d really appreciate a quick review: {{reviewLink}}";
   }
+
+  document.querySelector(".page").classList.add("ready");
 }
 
 function createSlug(text) {
