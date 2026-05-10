@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>RevUp - Send Review SMS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <style>
     body {
@@ -124,18 +125,19 @@
     }
 
     .box {
-      width: 390px;
+      width: 470px;
+      max-width: calc(100vw - 40px);
       background: white;
-      padding: 28px;
+      padding: 36px;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      border-radius: 22px;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.08);
     }
 
     h3 {
       margin-top: 0;
       margin-bottom: 8px;
-      font-size: 22px;
+      font-size: 28px;
     }
 
     .subtitle {
@@ -162,7 +164,7 @@
       margin-top: 10px;
       box-sizing: border-box;
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     input {
@@ -229,6 +231,94 @@
       font-size: 14px;
       color: #334155;
     }
+
+
+    /* ===== RevUp Send SMS sizing polish ===== */
+    .nav > div:last-child {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 22px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .nav > div:last-child a {
+      margin-left: 0;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .account-menu {
+      margin-left: 0;
+    }
+
+    .avatar-btn {
+      width: 36px !important;
+      height: 36px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        min-height: 100dvh;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 86px 12px 24px;
+      }
+
+      .nav {
+        height: 72px;
+        min-height: 72px;
+        padding: 0 16px;
+      }
+
+      .logo {
+        white-space: nowrap;
+        font-size: 22px;
+        line-height: 1;
+      }
+
+      .nav > div:last-child {
+        gap: 12px;
+      }
+
+      .nav a {
+        margin-left: 0;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .box {
+        width: 100%;
+        max-width: 100%;
+        min-height: calc(100dvh - 110px);
+        padding: 26px;
+        border-radius: 22px;
+      }
+
+      h3 {
+        font-size: 28px;
+      }
+
+      input,
+      button {
+        font-size: 16px;
+        padding: 14px;
+      }
+
+      .avatar-btn {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+      }
+    }
   </style>
 </head>
 
@@ -240,7 +330,7 @@
       <a href="#" onclick="goToDashboard()">Dashboard</a>
 
       <div class="account-menu">
-        <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn">A</button>
+        <button class="avatar-btn" onclick="toggleAccountMenu()" id="avatarBtn"></button>
 
         <div class="account-dropdown" id="accountDropdown">
           <div class="account-email" id="accountEmail">Account</div>
@@ -268,7 +358,9 @@
 
     <input id="name" placeholder="Customer Name" />
     <input id="phone" placeholder="Australian mobile e.g. 0412 345 678" inputmode="tel" />
-    <div class="subtitle" style="margin-top:8px; margin-bottom:0; font-size:13px;">AU mobile numbers only. RevUp currently sends SMS to Australian numbers.</div>
+    <div class="subtitle" style="margin-top:8px; margin-bottom:0; font-size:13px;">
+      AU mobile numbers only. RevUp currently sends SMS to Australian numbers.
+    </div>
         
     <button id="sendButton" onclick="sendSMS()">Send SMS</button>
     <button class="upgrade" onclick="upgrade('basic')">Upgrade to Basic ($29)</button>
@@ -382,24 +474,31 @@
 
     let businessSlug = params.get("business") || localStorage.getItem("businessSlug");
 
-    if (businessSlug) {
-      localStorage.setItem("businessSlug", businessSlug);
-    } else {
-      window.location.href = "/signup.html";
-    }
-
     async function loadBusiness() {
       const status = document.getElementById("status");
       const businessSubtitle = document.getElementById("businessSubtitle");
 
       try {
-        const res = await fetch(`/business/${businessSlug}`);
-        const business = await res.json();
+        let business = null;
 
-        if (!res.ok) {
-          businessSubtitle.innerText = "Business not found.";
-          status.innerText = "❌ Business not found. Please switch business.";
-          return;
+        if (businessSlug) {
+          const res = await fetch(`/business/${businessSlug}`);
+          if (res.ok) {
+            business = await res.json();
+          }
+        }
+
+        if (!business) {
+          const myBusinessRes = await fetch("/my-business");
+          const myBusinessData = await myBusinessRes.json();
+
+          if (!myBusinessData.business) {
+            window.location.href = "/signup.html";
+            return;
+          }
+
+          business = myBusinessData.business;
+          businessSlug = business.slug;
         }
 
         localStorage.setItem("businessSlug", businessSlug);
@@ -420,27 +519,19 @@
 
       let cleaned = rawPhone.replace(/\s+/g, "").replace(/-/g, "").replace(/\(|\)/g, "");
 
-      // AU numbers only. Allow users to type 0412..., 412..., +61412..., or 61412...
+      // remove + if user includes it
       if (cleaned.startsWith("+")) {
         cleaned = cleaned.substring(1);
       }
 
-      if (cleaned.startsWith("64")) {
-        status.innerText = "❌ NZ numbers are not supported yet. Please enter an Australian mobile number.";
-        return;
-      }
-
+      // remove AU country code if user types it manually
       if (cleaned.startsWith("61")) {
         cleaned = cleaned.substring(2);
       }
 
+      // remove leading 0
       if (cleaned.startsWith("0")) {
         cleaned = cleaned.substring(1);
-      }
-
-      if (!/^4\d{8}$/.test(cleaned)) {
-        status.innerText = "❌ Please enter a valid Australian mobile number, e.g. 0412 345 678.";
-        return;
       }
 
       const phone = "+61" + cleaned;
@@ -454,6 +545,11 @@
 
       if (!name || !rawPhone) {
         status.innerText = "❌ Please enter customer name and phone.";
+        return;
+      }
+
+      if (!/^4\d{8}$/.test(cleaned)) {
+        status.innerText = "❌ Please enter a valid Australian mobile number, e.g. 0412 345 678.";
         return;
       }
 
