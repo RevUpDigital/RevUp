@@ -117,9 +117,17 @@
 
 <script>
 const params = new URLSearchParams(window.location.search);
+const pathParts = window.location.pathname.split("/").filter(Boolean);
 
-const businessSlug = params.get("business");
-const customerName = params.get("name") || "there";
+// Supports both clean links like /r/business-slug/customer-name
+// and old backup links like /review.html?business=business-slug&name=customer-name
+const businessSlug = pathParts[0] === "r"
+  ? pathParts[1]
+  : params.get("business");
+
+const customerName = pathParts[0] === "r"
+  ? decodeURIComponent(pathParts.slice(2).join(" ") || "there")
+  : (params.get("name") || "there");
 
 let businessData = null;
 

@@ -122,6 +122,11 @@ app.get("/", (req, res) => {
 
 app.use(express.static(path.join(__dirname, "public")));
 
+/* ================= CLEAN REVIEW LINK ROUTE ================= */
+app.get("/r/:businessSlug/:customerName", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "review.html"));
+});
+
 /* ================= DATABASE ================= */
 mongoose
   .connect(process.env.MONGODB_URI, { dbName: "revup" })
@@ -627,7 +632,7 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
       return res.status(404).json({ success: false, error: "Business not found" });
     }
 
-    const reviewLink = `${BASE_URL}/review.html?business=${business.slug}&name=${encodeURIComponent(name)}`;
+    const reviewLink = `${BASE_URL}/r/${business.slug}/${encodeURIComponent(name)}`;
 
     const message = business.smsMessage
       .replaceAll("{{name}}", name)
