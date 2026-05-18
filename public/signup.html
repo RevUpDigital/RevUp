@@ -351,7 +351,58 @@
       }
     }
 
-  </style>
+  
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .help-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #2563eb;
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .help-box {
+      display: none;
+      position: absolute;
+      top: 28px;
+      left: 0;
+      width: 280px;
+      background: white;
+      border: 1px solid #dbeafe;
+      border-radius: 14px;
+      padding: 14px;
+      color: #334155;
+      font-size: 13px;
+      line-height: 1.6;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.10);
+      z-index: 20;
+    }
+
+    .help-icon:hover .help-box,
+    .help-icon.active .help-box {
+      display: block;
+    }
+
+    .help-box strong {
+      color: #1d4ed8;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+</style>
 
 </head>
 
@@ -563,6 +614,17 @@ window.addEventListener("click", function(e) {
 });
 
 init();
+</script>
+
+
+<script>
+document.addEventListener("click", function(e) {
+  document.querySelectorAll(".help-icon").forEach(icon => {
+    if (!icon.contains(e.target)) {
+      icon.classList.remove("active");
+    }
+  });
+});
 </script>
 
 </body>
