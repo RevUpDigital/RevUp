@@ -28,9 +28,15 @@
     }
 
     .logo {
-      font-size: 22px;
-      font-weight: 800;
-      color: #2563eb;
+      font-size: 22px !important;
+      font-weight: 800 !important;
+      color: #2563eb !important;
+      text-decoration: none !important;
+      white-space: nowrap !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      flex-shrink: 0 !important;
     }
 
     .nav-links a {
@@ -449,11 +455,17 @@
         gap: 10px;
       }
 
-      .logo {
-        white-space: nowrap;
-        line-height: 1.1;
-        font-size: 20px;
-      }
+    .logo {
+      font-size: 22px !important;
+      font-weight: 800 !important;
+      color: #2563eb !important;
+      text-decoration: none !important;
+      white-space: nowrap !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      flex-shrink: 0 !important;
+    }
 
       .nav-links {
         display: flex;
@@ -497,7 +509,7 @@
 <body>
 
   <div class="nav">
-    <div class="logo">RevUp 🚀</div>
+    <a href="/" class="logo">RevUp 🚀</a>
     <div class="nav-links" id="navLinks">
   <a href="#how">How it works</a>
   <a href="#pricing">Pricing</a>

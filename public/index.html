@@ -35,9 +35,15 @@
     }
 
     .logo {
-      font-weight: bold;
-      color: #2563eb;
-      font-size: 20px;
+      font-size: 22px !important;
+      font-weight: 800 !important;
+      color: #2563eb !important;
+      text-decoration: none !important;
+      white-space: nowrap !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      flex-shrink: 0 !important;
     }
 
     .nav a {
@@ -279,11 +285,17 @@
         padding: 0 16px;
       }
 
-      .logo {
-        white-space: nowrap;
-        font-size: 22px;
-        line-height: 1;
-      }
+    .logo {
+      font-size: 22px !important;
+      font-weight: 800 !important;
+      color: #2563eb !important;
+      text-decoration: none !important;
+      white-space: nowrap !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      flex-shrink: 0 !important;
+    }
 
       .nav > div:last-child {
         gap: 12px;
@@ -324,7 +336,7 @@
 
 <body>
   <div class="nav">
-    <div class="logo">RevUp 🚀</div>
+    <a href="/" class="logo">RevUp 🚀</a>
     <div>
       <a href="/">Home</a>
       <a href="#" onclick="goToDashboard()">Dashboard</a>
