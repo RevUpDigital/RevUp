@@ -352,15 +352,23 @@
     }
 
   
+    /* ===== RevUp setup help tooltips ===== */
     .label-row {
       display: flex;
       align-items: center;
       gap: 8px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      position: relative;
+    }
+
+    .label-row label {
+      margin: 0;
     }
 
     .help-icon {
-      width: 18px;
-      height: 18px;
+      width: 19px;
+      height: 19px;
       border-radius: 999px;
       background: #2563eb;
       color: white;
@@ -372,6 +380,7 @@
       cursor: pointer;
       position: relative;
       flex-shrink: 0;
+      user-select: none;
     }
 
     .help-box {
@@ -379,16 +388,18 @@
       position: absolute;
       top: 28px;
       left: 0;
-      width: 280px;
+      width: 310px;
       background: white;
-      border: 1px solid #dbeafe;
+      border: 1px solid #bfdbfe;
       border-radius: 14px;
       padding: 14px;
       color: #334155;
       font-size: 13px;
       line-height: 1.6;
-      box-shadow: 0 12px 30px rgba(15,23,42,0.10);
-      z-index: 20;
+      box-shadow: 0 12px 30px rgba(15,23,42,0.12);
+      z-index: 999;
+      text-align: left;
+      font-weight: 400;
     }
 
     .help-icon:hover .help-box,
@@ -396,10 +407,26 @@
       display: block;
     }
 
-    .help-box strong {
+    .help-box .help-title {
       color: #1d4ed8;
+      font-weight: 800;
       display: block;
       margin-bottom: 6px;
+    }
+
+    .help-box code {
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 2px 5px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .help-box {
+        width: min(300px, calc(100vw - 56px));
+        left: -24px;
+      }
     }
 
 </style>
@@ -441,10 +468,38 @@
 <label>Business email</label>
 <input id="email" />
 
-<label>Google review link</label>
+<div class="label-row">
+  <label>Google review link</label>
+  <div class="help-icon" onclick="toggleHelpIcon(event, this)">
+    ?
+    <div class="help-box">
+      <span class="help-title">Google Review Link</span>
+      Paste your direct Google review link here.<br><br>
+      Customers who choose the happy option will be sent to this page to leave a public Google review.<br><br>
+      Tip: Search your business on Google, click <strong>Write a review</strong>, then copy the URL.
+    </div>
+  </div>
+</div>
 <input id="googleReviewLink" />
 
-<label>SMS message</label>
+<div class="label-row">
+  <label>SMS message</label>
+  <div class="help-icon" onclick="toggleHelpIcon(event, this)">
+    ?
+    <div class="help-box">
+      <span class="help-title">SMS Message Variables</span>
+      This is the SMS your customers will receive.<br><br>
+      You can customise the wording, but keep these placeholders in your message:<br><br>
+      <code>{{name}}</code> inserts the customer’s name<br>
+      <code>{{businessName}}</code> inserts your business name<br>
+      <code>{{reviewLink}}</code> inserts your RevUp review link<br><br>
+      Example:<br>
+      Hi <code>{{name}}</code>, thanks for choosing <code>{{businessName}}</code>. We'd love your feedback:<br>
+      <code>{{reviewLink}}</code><br><br>
+      Tip: Keep it short and friendly for best response rates.
+    </div>
+  </div>
+</div>
 <textarea id="smsMessage"></textarea>
 
 <button id="submitBtn" onclick="handleSubmit()">Create Business</button>
@@ -618,11 +673,21 @@ init();
 
 
 <script>
-document.addEventListener("click", function(e) {
-  document.querySelectorAll(".help-icon").forEach(icon => {
-    if (!icon.contains(e.target)) {
-      icon.classList.remove("active");
+function toggleHelpIcon(event, icon) {
+  event.stopPropagation();
+
+  document.querySelectorAll(".help-icon").forEach(otherIcon => {
+    if (otherIcon !== icon) {
+      otherIcon.classList.remove("active");
     }
+  });
+
+  icon.classList.toggle("active");
+}
+
+document.addEventListener("click", function() {
+  document.querySelectorAll(".help-icon").forEach(icon => {
+    icon.classList.remove("active");
   });
 });
 </script>
