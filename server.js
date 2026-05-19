@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL || "https://www.revupdigital.com.au";
 const STRIPE_BASIC_PRICE_ID = process.env.STRIPE_BASIC_PRICE_ID;
+const STRIPE_GROWTH_PRICE_ID = process.env.STRIPE_GROWTH_PRICE_ID;
 const STRIPE_PRO_PRICE_ID = process.env.STRIPE_PRO_PRICE_ID;
 
 const express = require("express");
@@ -71,6 +72,10 @@ app.post(
 
         if (priceId === STRIPE_BASIC_PRICE_ID) {
           plan = "basic";
+        }
+
+        if (priceId === STRIPE_GROWTH_PRICE_ID) {
+          plan = "growth";
         }
 
         await User.findOneAndUpdate(
@@ -539,9 +544,12 @@ const PLAN_LIMITS = {
 };
 
 function getSmsLimit(user) {
-  if (user.isAdmin) return Infinity;
+  if (user.isAdmin || user.manualAccess) return "unlimited";
 
-  return PLAN_LIMITS[user.plan] || PLAN_LIMITS.basic;
+  if (user.plan === "pro") return 500;
+  if (user.plan === "growth") return 250;
+
+  return 100;
 }
 
 function isAllowedPhoneNumber(phone) {
