@@ -232,27 +232,6 @@
       font-weight: 700;
     }
 
-
-    .phone-warning {
-      display: none;
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      color: #9a3412;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 14px;
-      line-height: 1.5;
-      margin-top: 12px;
-      margin-bottom: 4px;
-      font-weight: 600;
-    }
-
-    .phone-warning strong {
-      display: block;
-      margin-bottom: 4px;
-      color: #7c2d12;
-    }
-
     #status {
       margin-top: 14px;
       font-size: 14px;
@@ -506,6 +485,32 @@
       }
     }
 
+  
+    .phone-warning {
+      display: none;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 12px 0 4px;
+      font-weight: 600;
+    }
+
+    .phone-warning.show {
+      display: block;
+    }
+
+    .send-anyway {
+      background: #ea580c !important;
+    }
+
+    .send-anyway:hover {
+      background: #c2410c !important;
+    }
+
   </style>
 </head>
 
@@ -548,9 +553,8 @@
     <div class="subtitle" style="margin-top:8px; margin-bottom:0; font-size:13px;">
       AU mobile numbers only. RevUp currently sends SMS to Australian numbers.
     </div>
-
-    <div id="phoneWarning" class="phone-warning"></div>
         
+    <div id="phoneWarning" class="phone-warning"></div>
     <button id="sendButton" onclick="sendSMS()">Send SMS</button>
     <button class="upgrade" onclick="upgrade('basic')">Upgrade to Basic ($29)</button>
     <button class="upgrade" onclick="upgrade('pro')">Upgrade to Pro ($59)</button>
@@ -562,7 +566,10 @@
   <script>
     let currentUser = null;
 
-    async function checkLogin() {
+    
+    let phoneWarningOverride = false;
+    let lastCheckedPhone = "";
+async function checkLogin() {
       const res = await fetch("/me");
       const user = await res.json();
 
@@ -701,80 +708,31 @@
       }
     }
 
+    async function sendSMS() {
+      const name = document.getElementById("name").value.trim();
+      const rawPhone = document.getElementById("phone").value.trim();
+      const status = document.getElementById("status");
+      const sendButton = document.getElementById("sendButton");
+      const phoneWarning = document.getElementById("phoneWarning");
 
-    function normaliseAuMobile(rawPhone) {
-      let cleaned = rawPhone.trim().replace(/\s+/g, "").replace(/-/g, "").replace(/\(|\)/g, "");
+      let cleaned = rawPhone.replace(/\s+/g, "").replace(/-/g, "");
 
+      // remove + if user includes it
       if (cleaned.startsWith("+")) {
         cleaned = cleaned.substring(1);
       }
 
+      // remove AU country code if user types it manually
       if (cleaned.startsWith("61")) {
         cleaned = cleaned.substring(2);
       }
 
+      // remove leading 0
       if (cleaned.startsWith("0")) {
         cleaned = cleaned.substring(1);
       }
 
-      return {
-        cleaned,
-        phone: "+61" + cleaned,
-        isValid: /^4\d{8}$/.test(cleaned)
-      };
-    }
-
-    let phoneHistoryTimer = null;
-
-    async function checkPhoneHistory() {
-      const warning = document.getElementById("phoneWarning");
-      const rawPhone = document.getElementById("phone").value.trim();
-
-      warning.style.display = "none";
-      warning.innerHTML = "";
-
-      if (!businessSlug || !rawPhone) return;
-
-      const phoneData = normaliseAuMobile(rawPhone);
-
-      if (!phoneData.isValid) return;
-
-      try {
-        const res = await fetch(`/phone-history?businessSlug=${encodeURIComponent(businessSlug)}&phone=${encodeURIComponent(phoneData.phone)}`);
-        const data = await res.json();
-
-        if (!res.ok) return;
-
-        if (data.count > 0) {
-          const lastSent = data.lastSent ? new Date(data.lastSent).toLocaleDateString() : "previously";
-          const timesText = data.count === 1 ? "1 review SMS" : `${data.count} review SMS messages`;
-
-          warning.innerHTML = `
-            <strong>⚠️ This number has been sent an SMS before</strong>
-            You have already sent ${timesText} to this number for this business.<br>
-            Last sent: ${lastSent}. You can still send another if needed.
-          `;
-          warning.style.display = "block";
-        }
-      } catch (err) {
-        console.log("PHONE HISTORY ERROR:", err);
-      }
-    }
-
-    function schedulePhoneHistoryCheck() {
-      clearTimeout(phoneHistoryTimer);
-      phoneHistoryTimer = setTimeout(checkPhoneHistory, 500);
-    }
-
-    async function sendSMS() {
-      const name = document.getElementById("name").value.trim();
-      
-      const rawPhone = document.getElementById("phone").value.trim();
-      const phoneData = normaliseAuMobile(rawPhone);
-      const cleaned = phoneData.cleaned;
-      const phone = phoneData.phone;
-
-      const status = document.getElementById("status");
+      const phone = "+61" + cleaned;
 
       if (!currentUser || !currentUser.hasAccess) {
         status.innerText = "❌ Please upgrade before sending SMS.";
@@ -786,9 +744,59 @@
         return;
       }
 
-      if (!phoneData.isValid) {
-        status.innerText = "❌ Please enter a valid Australian mobile number, e.g. 0412 345 678.";
+      if (!/^(\+61)4\d{8}$/.test(phone)) {
+        status.innerText = "❌ Please enter a valid Australian mobile number.";
         return;
+      }
+
+      // If the phone changed after a warning, reset confirmation state.
+      if (phone !== lastCheckedPhone) {
+        phoneWarningOverride = false;
+        lastCheckedPhone = phone;
+
+        if (phoneWarning) {
+          phoneWarning.classList.remove("show");
+          phoneWarning.innerText = "";
+        }
+
+        if (sendButton) {
+          sendButton.innerText = "Send SMS";
+          sendButton.classList.remove("send-anyway");
+        }
+      }
+
+      // First click: check repeat history. If found, stop here and require a second click.
+      if (!phoneWarningOverride) {
+        try {
+          const historyRes = await fetch(`/check-phone-history?businessSlug=${encodeURIComponent(businessSlug)}&phone=${encodeURIComponent(phone)}`);
+          const history = await historyRes.json();
+
+          if (historyRes.ok && history.count > 0) {
+            const lastSentText = history.lastSent
+              ? new Date(history.lastSent).toLocaleString()
+              : "Unknown";
+
+            if (phoneWarning) {
+              phoneWarning.innerHTML =
+                `⚠️ You have already sent <strong>${history.count}</strong> review SMS ${history.count === 1 ? "message" : "messages"} to this number for this business.<br>` +
+                `Last sent: <strong>${lastSentText}</strong><br>` +
+                `Click <strong>Send SMS anyway</strong> if you still want to send another one.`;
+              phoneWarning.classList.add("show");
+            }
+
+            if (sendButton) {
+              sendButton.innerText = "Send SMS anyway";
+              sendButton.classList.add("send-anyway");
+            }
+
+            status.innerText = "";
+            phoneWarningOverride = true;
+            return;
+          }
+        } catch (err) {
+          console.log("PHONE HISTORY CHECK ERROR:", err);
+          // Do not block SMS if the warning check fails.
+        }
       }
 
       status.innerText = "Sending SMS...";
@@ -815,11 +823,22 @@
             status.innerText = `✅ SMS sent successfully. ${data.smsRemaining} SMS remaining this month.`;
           }
 
-          // Reset form
+          // Reset form and confirmation state
           document.getElementById("name").value = "";
           document.getElementById("phone").value = "";
-          document.getElementById("phoneWarning").style.display = "none";
-          document.getElementById("phoneWarning").innerHTML = "";
+
+          phoneWarningOverride = false;
+          lastCheckedPhone = "";
+
+          if (phoneWarning) {
+            phoneWarning.classList.remove("show");
+            phoneWarning.innerText = "";
+          }
+
+          if (sendButton) {
+            sendButton.innerText = "Send SMS";
+            sendButton.classList.remove("send-anyway");
+          }
 
           loadUsage();
 
@@ -831,7 +850,6 @@
           }
 
           status.innerText = "❌ " + errorMessage;
-
           loadUsage();
         }
 
@@ -873,8 +891,23 @@
 
     const phoneInput = document.getElementById("phone");
     if (phoneInput) {
-      phoneInput.addEventListener("input", schedulePhoneHistoryCheck);
-      phoneInput.addEventListener("blur", checkPhoneHistory);
+      phoneInput.addEventListener("input", function() {
+        phoneWarningOverride = false;
+        lastCheckedPhone = "";
+
+        const phoneWarning = document.getElementById("phoneWarning");
+        const sendButton = document.getElementById("sendButton");
+
+        if (phoneWarning) {
+          phoneWarning.classList.remove("show");
+          phoneWarning.innerText = "";
+        }
+
+        if (sendButton) {
+          sendButton.innerText = "Send SMS";
+          sendButton.classList.remove("send-anyway");
+        }
+      });
     }
 
     checkLogin().then((loggedIn) => {
