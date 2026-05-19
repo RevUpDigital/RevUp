@@ -181,6 +181,7 @@ const reviewEventSchema = new mongoose.Schema({
   businessSlug: String,
   businessName: String,
   customerName: String,
+  customerPhone: String,
   eventType: String,
   date: { type: Date, default: Date.now }
 });
@@ -544,7 +545,7 @@ function getSmsLimit(user) {
 }
 
 function isAllowedPhoneNumber(phone) {
-  return phone.startsWith("+61") || phone.startsWith("+64");
+  return phone.startsWith("+61");
 }
 
 function needsSmsReset(user) {
@@ -605,7 +606,7 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
     if (!isAllowedPhoneNumber(phone)) {
       return res.status(400).json({
         success: false,
-        error: "Only Australian (+61) and New Zealand (+64) phone numbers are allowed.",
+        error: "Only Australian (+61) mobile numbers are allowed.",
       });
     }
 
@@ -693,6 +694,7 @@ app.post("/send-sms", requireAuth, requireAccess, async (req, res) => {
       businessSlug,
       businessName: business.businessName,
       customerName: name,
+      customerPhone: phone,
       eventType: "sms_sent",
     });
 
@@ -731,6 +733,37 @@ app.get("/user-usage", requireAuth, requireAccess, async (req, res) => {
     res.status(500).json({ error: "Could not load usage" });
   }
 });
+
+app.get("/phone-history", requireAuth, requireAccess, async (req, res) => {
+  try {
+    const { businessSlug, phone } = req.query;
+
+    if (!businessSlug || !phone) {
+      return res.status(400).json({ error: "Business slug and phone are required" });
+    }
+
+    const business = await Business.findOne({ slug: businessSlug, userId: req.session.userId });
+
+    if (!business) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    const matchingEvents = await ReviewEvent.find({
+      businessSlug,
+      customerPhone: phone,
+      eventType: "sms_sent"
+    }).sort({ date: -1 });
+
+    res.json({
+      count: matchingEvents.length,
+      lastSent: matchingEvents.length ? matchingEvents[0].date : null
+    });
+  } catch (err) {
+    console.log("Phone history error:", err);
+    res.status(500).json({ error: "Could not check phone history" });
+  }
+});
+
 /* ================= FEEDBACK ================= */
 
 app.post("/save-feedback", async (req, res) => {

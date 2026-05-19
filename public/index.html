@@ -232,6 +232,27 @@
       font-weight: 700;
     }
 
+
+    .phone-warning {
+      display: none;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .phone-warning strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #7c2d12;
+    }
+
     #status {
       margin-top: 14px;
       font-size: 14px;
@@ -527,6 +548,8 @@
     <div class="subtitle" style="margin-top:8px; margin-bottom:0; font-size:13px;">
       AU mobile numbers only. RevUp currently sends SMS to Australian numbers.
     </div>
+
+    <div id="phoneWarning" class="phone-warning"></div>
         
     <button id="sendButton" onclick="sendSMS()">Send SMS</button>
     <button class="upgrade" onclick="upgrade('basic')">Upgrade to Basic ($29)</button>
@@ -678,29 +701,78 @@
       }
     }
 
-    async function sendSMS() {
-      const name = document.getElementById("name").value.trim();
-      
-      const rawPhone = document.getElementById("phone").value.trim();
 
-      let cleaned = rawPhone.replace(/\s+/g, "").replace(/-/g, "").replace(/\(|\)/g, "");
+    function normaliseAuMobile(rawPhone) {
+      let cleaned = rawPhone.trim().replace(/\s+/g, "").replace(/-/g, "").replace(/\(|\)/g, "");
 
-      // remove + if user includes it
       if (cleaned.startsWith("+")) {
         cleaned = cleaned.substring(1);
       }
 
-      // remove AU country code if user types it manually
       if (cleaned.startsWith("61")) {
         cleaned = cleaned.substring(2);
       }
 
-      // remove leading 0
       if (cleaned.startsWith("0")) {
         cleaned = cleaned.substring(1);
       }
 
-      const phone = "+61" + cleaned;
+      return {
+        cleaned,
+        phone: "+61" + cleaned,
+        isValid: /^4\d{8}$/.test(cleaned)
+      };
+    }
+
+    let phoneHistoryTimer = null;
+
+    async function checkPhoneHistory() {
+      const warning = document.getElementById("phoneWarning");
+      const rawPhone = document.getElementById("phone").value.trim();
+
+      warning.style.display = "none";
+      warning.innerHTML = "";
+
+      if (!businessSlug || !rawPhone) return;
+
+      const phoneData = normaliseAuMobile(rawPhone);
+
+      if (!phoneData.isValid) return;
+
+      try {
+        const res = await fetch(`/phone-history?businessSlug=${encodeURIComponent(businessSlug)}&phone=${encodeURIComponent(phoneData.phone)}`);
+        const data = await res.json();
+
+        if (!res.ok) return;
+
+        if (data.count > 0) {
+          const lastSent = data.lastSent ? new Date(data.lastSent).toLocaleDateString() : "previously";
+          const timesText = data.count === 1 ? "1 review SMS" : `${data.count} review SMS messages`;
+
+          warning.innerHTML = `
+            <strong>⚠️ This number has been sent an SMS before</strong>
+            You have already sent ${timesText} to this number for this business.<br>
+            Last sent: ${lastSent}. You can still send another if needed.
+          `;
+          warning.style.display = "block";
+        }
+      } catch (err) {
+        console.log("PHONE HISTORY ERROR:", err);
+      }
+    }
+
+    function schedulePhoneHistoryCheck() {
+      clearTimeout(phoneHistoryTimer);
+      phoneHistoryTimer = setTimeout(checkPhoneHistory, 500);
+    }
+
+    async function sendSMS() {
+      const name = document.getElementById("name").value.trim();
+      
+      const rawPhone = document.getElementById("phone").value.trim();
+      const phoneData = normaliseAuMobile(rawPhone);
+      const cleaned = phoneData.cleaned;
+      const phone = phoneData.phone;
 
       const status = document.getElementById("status");
 
@@ -714,7 +786,7 @@
         return;
       }
 
-      if (!/^4\d{8}$/.test(cleaned)) {
+      if (!phoneData.isValid) {
         status.innerText = "❌ Please enter a valid Australian mobile number, e.g. 0412 345 678.";
         return;
       }
@@ -746,6 +818,8 @@
           // Reset form
           document.getElementById("name").value = "";
           document.getElementById("phone").value = "";
+          document.getElementById("phoneWarning").style.display = "none";
+          document.getElementById("phoneWarning").innerHTML = "";
 
           loadUsage();
 
@@ -795,6 +869,13 @@
         document.getElementById("accountDropdown").classList.remove("show");
       }
     });
+
+
+    const phoneInput = document.getElementById("phone");
+    if (phoneInput) {
+      phoneInput.addEventListener("input", schedulePhoneHistoryCheck);
+      phoneInput.addEventListener("blur", checkPhoneHistory);
+    }
 
     checkLogin().then((loggedIn) => {
       if (loggedIn) {
