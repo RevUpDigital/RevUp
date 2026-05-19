@@ -751,7 +751,27 @@
       }
     }
 
-  </style>
+  
+    /* ===== Correct homepage auth nav states ===== */
+    #loggedInNav.logged-out {
+      display: none !important;
+    }
+
+    #loggedOutNav.logged-in {
+      display: none !important;
+    }
+
+    @media (max-width: 700px) {
+      body:not(.logged-in) #loggedInNav {
+        display: none !important;
+      }
+
+      body.logged-in #loggedOutNav {
+        display: none !important;
+      }
+    }
+
+</style>
 </head>
 
 <body>
