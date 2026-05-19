@@ -657,7 +657,29 @@
       }
     }
 
-  
+
+
+    /* ===== Homepage auth nav state fix ===== */
+    #loggedInNav {
+      display: none !important;
+    }
+
+    #loggedOutNav {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 22px !important;
+    }
+
+    body.logged-in #loggedOutNav {
+      display: none !important;
+    }
+
+    body.logged-in #loggedInNav {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 22px !important;
+    }
+
     @media (max-width: 700px) {
       body.logged-in .nav-links > a[href="#how"],
       body.logged-in .nav-links > a[href="#pricing"],
@@ -665,109 +687,32 @@
         display: none !important;
       }
 
-      body.logged-in .nav-links {
-        max-width: none !important;
-      }
-    }
-
-  
-    
-    /* ===== Home mobile nav cleanup ===== */
-    @media (max-width: 700px) {
-
-      body.logged-in a[href="#how"],
-      body.logged-in a[href="#pricing"],
-      body.logged-in a[href="#faq"] {
-        display: none !important;
-      }
-
       body.logged-in #loggedInNav {
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-        flex-wrap: nowrap !important;
-      }
-
-      body.logged-in .nav-links {
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-      }
-
-      body.logged-in .nav {
-        justify-content: space-between !important;
-      }
-
-      #loggedOutNav {
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-      }
-
-      #loggedOutNav a {
-        display: inline-flex !important;
-        align-items: center !important;
-        line-height: 1 !important;
-      }
-
-      #loggedOutNav .nav-cta {
-        display: none !important;
-      }
-    }
-
-
-      body.logged-in .nav-links {
-        max-width: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-        gap: 12px !important;
-        flex-wrap: nowrap !important;
-      }
-
-      #loggedInNav {
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-        flex-wrap: nowrap !important;
-      }
-
-      #loggedOutNav {
         display: inline-flex !important;
         align-items: center !important;
         gap: 12px !important;
-        line-height: 1 !important;
       }
 
-      #loggedOutNav a,
-      .nav-links a {
-        display: inline-flex !important;
-        align-items: center !important;
-        line-height: 1 !important;
-      }
-
-      #loggedOutNav .nav-cta {
-        display: none !important;
-      }
-    }
-
-  
-    /* ===== Correct homepage auth nav states ===== */
-    #loggedInNav.logged-out {
-      display: none !important;
-    }
-
-    #loggedOutNav.logged-in {
-      display: none !important;
-    }
-
-    @media (max-width: 700px) {
       body:not(.logged-in) #loggedInNav {
         display: none !important;
       }
 
-      body.logged-in #loggedOutNav {
+      body:not(.logged-in) #loggedOutNav {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+      }
+
+      #loggedOutNav .nav-cta {
         display: none !important;
+      }
+
+      #loggedOutNav a,
+      #loggedInNav a,
+      .nav-links > a {
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
       }
     }
 
@@ -1019,26 +964,44 @@
   <script>
   async function checkLogin() {
     try {
-      const res = await fetch("/me");
+      const res = await fetch("/me", { cache: "no-store" });
       const user = await res.json();
 
+      const loggedOutNav = document.getElementById("loggedOutNav");
+      const loggedInNav = document.getElementById("loggedInNav");
+
       if (user.loggedIn) {
-        document.getElementById("loggedOutNav").style.display = "none";
-        document.getElementById("loggedInNav").style.display = "inline-block";
+        document.body.classList.add("logged-in");
+
+        if (loggedOutNav) loggedOutNav.style.display = "none";
+        if (loggedInNav) loggedInNav.style.display = "inline-flex";
 
         const avatar = document.getElementById("avatarBtn");
         const accountEmail = document.getElementById("accountEmail");
 
-        if (avatar) {
+        if (avatar && user.email) {
           avatar.innerText = user.email.charAt(0).toUpperCase();
         }
 
-        if (accountEmail) {
+        if (accountEmail && user.email) {
           accountEmail.innerText = user.email;
         }
+      } else {
+        document.body.classList.remove("logged-in");
+
+        if (loggedOutNav) loggedOutNav.style.display = "inline-flex";
+        if (loggedInNav) loggedInNav.style.display = "none";
       }
     } catch (err) {
-      console.log("Login check failed");
+      document.body.classList.remove("logged-in");
+
+      const loggedOutNav = document.getElementById("loggedOutNav");
+      const loggedInNav = document.getElementById("loggedInNav");
+
+      if (loggedOutNav) loggedOutNav.style.display = "inline-flex";
+      if (loggedInNav) loggedInNav.style.display = "none";
+
+      console.log("Login check failed", err);
     }
   }
 
