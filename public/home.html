@@ -671,13 +671,50 @@
     }
 
   
+    
     /* ===== Home mobile nav cleanup ===== */
     @media (max-width: 700px) {
-      body.logged-in .nav-links > a[href="#how"],
-      body.logged-in .nav-links > a[href="#pricing"],
-      body.logged-in .nav-links > a[href="#faq"] {
+
+      body.logged-in a[href="#how"],
+      body.logged-in a[href="#pricing"],
+      body.logged-in a[href="#faq"] {
         display: none !important;
       }
+
+      body.logged-in #loggedInNav {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        flex-wrap: nowrap !important;
+      }
+
+      body.logged-in .nav-links {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+      }
+
+      body.logged-in .nav {
+        justify-content: space-between !important;
+      }
+
+      #loggedOutNav {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+      }
+
+      #loggedOutNav a {
+        display: inline-flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
+      }
+
+      #loggedOutNav .nav-cta {
+        display: none !important;
+      }
+    }
+
 
       body.logged-in .nav-links {
         max-width: none !important;
