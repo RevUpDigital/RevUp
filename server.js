@@ -66,12 +66,16 @@ app.post(
 
         let plan = "basic";
 
-        if (priceId === STRIPE_PRO_PRICE_ID) {
-          plan = "pro";
-        }
-
         if (priceId === STRIPE_BASIC_PRICE_ID) {
           plan = "basic";
+        }
+
+        if (priceId === STRIPE_GROWTH_PRICE_ID) {
+          plan = "growth";
+        }
+
+        if (priceId === STRIPE_PRO_PRICE_ID) {
+          plan = "pro";
         }
 
         if (priceId === STRIPE_GROWTH_PRICE_ID) {
@@ -377,18 +381,37 @@ app.post("/update-profile", requireAuth, async (req, res) => {
 app.post("/create-checkout-session", requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId);
-    const plan = req.body?.plan || "basic";
 
-    const selectedPlan = plan === "pro" ? "pro" : "basic";
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
 
-    const priceId =
-      selectedPlan === "pro"
-        ? STRIPE_PRO_PRICE_ID
-        : STRIPE_BASIC_PRICE_ID;
+    const requestedPlan = req.body?.plan || "basic";
 
-    if (!priceId) {
+    const plans = {
+      basic: {
+        name: "Starter",
+        priceId: STRIPE_BASIC_PRICE_ID,
+        smsLimit: 100,
+      },
+      growth: {
+        name: "Growth",
+        priceId: STRIPE_GROWTH_PRICE_ID,
+        smsLimit: 250,
+      },
+      pro: {
+        name: "Pro",
+        priceId: STRIPE_PRO_PRICE_ID,
+        smsLimit: 500,
+      },
+    };
+
+    const selectedPlanKey = plans[requestedPlan] ? requestedPlan : "basic";
+    const selectedPlan = plans[selectedPlanKey];
+
+    if (!selectedPlan.priceId) {
       return res.status(500).json({
-        error: `Missing Stripe price ID for ${selectedPlan} plan`,
+        error: `Missing Stripe price ID for ${selectedPlan.name} plan`,
       });
     }
 
@@ -398,17 +421,21 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
       customer_email: user.email,
       client_reference_id: user._id.toString(),
       metadata: {
-        plan: selectedPlan,
+        plan: selectedPlanKey,
+        planName: selectedPlan.name,
+        smsLimit: String(selectedPlan.smsLimit),
       },
       subscription_data: {
         trial_period_days: 7,
         metadata: {
-          plan: selectedPlan,
+          plan: selectedPlanKey,
+          planName: selectedPlan.name,
+          smsLimit: String(selectedPlan.smsLimit),
         },
       },
       line_items: [
         {
-          price: priceId,
+          price: selectedPlan.priceId,
           quantity: 1,
         },
       ],
@@ -421,7 +448,7 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
     console.log("Stripe checkout error:", err);
     res.status(500).json({ error: "Could not create checkout session" });
   }
-});
+})
 
 app.get("/payment-success", requireAuth, async (req, res) => {
   res.redirect("/index.html");
