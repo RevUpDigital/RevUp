@@ -211,26 +211,50 @@ function resolveStripePlanFromSubscription(subscription) {
 }
 
 
-async function syncUserFromCheckoutSession(sessionId, userId) {
-  if (!sessionId || !userId) return;
+async function syncUserLatestStripeSubscription(user) {
+  if (!user || !user.stripeCustomerId) return user;
 
-  const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
+  const subscriptions = await stripe.subscriptions.list({
+    customer: user.stripeCustomerId,
+    status: "all",
+    limit: 10,
+  });
 
-  let plan = checkoutSession.metadata?.plan || "basic";
-  let subscriptionStatus = "active";
+  const activeSub =
+    subscriptions.data.find((sub) => sub.status === "active") ||
+    subscriptions.data.find((sub) => sub.status === "trialing");
 
-  if (checkoutSession.subscription) {
-    const subscription = await stripe.subscriptions.retrieve(checkoutSession.subscription);
-    plan = resolveStripePlanFromSubscription(subscription);
-    subscriptionStatus = subscription.status || subscriptionStatus;
+  if (activeSub) {
+    const plan = resolveStripePlanFromSubscription(activeSub);
+
+    return await User.findByIdAndUpdate(
+      user._id,
+      {
+        stripeSubscriptionId: activeSub.id,
+        subscriptionStatus: activeSub.status,
+        plan,
+      },
+      { new: true }
+    );
   }
 
-  await User.findByIdAndUpdate(userId, {
-    stripeCustomerId: checkoutSession.customer,
-    stripeSubscriptionId: checkoutSession.subscription,
-    subscriptionStatus,
-    plan,
-  });
+  const latestSub = subscriptions.data[0];
+
+  if (latestSub) {
+    const plan = resolveStripePlanFromSubscription(latestSub);
+
+    return await User.findByIdAndUpdate(
+      user._id,
+      {
+        stripeSubscriptionId: latestSub.id,
+        subscriptionStatus: latestSub.status === "canceled" ? "canceled" : latestSub.status,
+        plan,
+      },
+      { new: true }
+    );
+  }
+
+  return user;
 }
 
 function hasAccess(user) {
@@ -327,6 +351,29 @@ app.post("/login", async (req, res) => {
   req.session.userId = user._id;
 
   res.json({ success: true });
+});
+
+
+app.post("/sync-subscription", requireAuth, async (req, res) => {
+  try {
+    let user = await User.findById(req.session.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    user = await syncUserLatestStripeSubscription(user);
+
+    res.json({
+      success: true,
+      subscriptionStatus: user.subscriptionStatus,
+      plan: user.plan || "basic",
+      hasAccess: hasAccess(user),
+    });
+  } catch (err) {
+    console.log("Sync subscription error:", err.message);
+    res.status(500).json({ success: false, error: "Could not sync subscription" });
+  }
 });
 
 app.get("/me", async (req, res) => {
@@ -485,7 +532,27 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
 
 app.get("/payment-success", requireAuth, async (req, res) => {
   try {
-    await syncUserFromCheckoutSession(req.query.session_id, req.session.userId);
+    const sessionId = req.query.session_id;
+
+    if (sessionId) {
+      const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
+
+      let plan = checkoutSession.metadata?.plan || "basic";
+      let subscriptionStatus = "active";
+
+      if (checkoutSession.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(checkoutSession.subscription);
+        plan = resolveStripePlanFromSubscription(subscription);
+        subscriptionStatus = subscription.status || subscriptionStatus;
+      }
+
+      await User.findByIdAndUpdate(req.session.userId, {
+        stripeCustomerId: checkoutSession.customer,
+        stripeSubscriptionId: checkoutSession.subscription,
+        subscriptionStatus,
+        plan,
+      });
+    }
   } catch (err) {
     console.log("Payment success sync error:", err.message);
   }

@@ -587,7 +587,14 @@
     }
 
     async function loadProfile() {
+      
       try {
+        await fetch("/sync-subscription", { method: "POST" });
+      } catch (err) {
+        console.log("Subscription sync skipped:", err);
+      }
+
+try {
         const res = await fetch("/me");
         const user = await res.json();
 
@@ -618,7 +625,7 @@
           pro: "Pro"
         };
 
-        const planName = planMap[user.plan] || "Starter";
+        const planName = planMap[user.plan] || "Subscription";
 
         let subscriptionLabel = "Free";
 
