@@ -46,14 +46,25 @@ app.post(
       if (event.type === "checkout.session.completed") {
         const checkoutSession = event.data.object;
 
-        const plan = checkoutSession.metadata?.plan || "basic";
+        let plan = checkoutSession.metadata?.plan || "basic";
+        let subscriptionStatus = "active";
+
+        if (checkoutSession.subscription) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(checkoutSession.subscription);
+            plan = resolveStripePlanFromSubscription(subscription);
+            subscriptionStatus = subscription.status || subscriptionStatus;
+          } catch (err) {
+            console.log("Could not retrieve subscription during checkout webhook:", err.message);
+          }
+        }
 
         await User.findOneAndUpdate(
           { email: checkoutSession.customer_email },
           {
             stripeCustomerId: checkoutSession.customer,
             stripeSubscriptionId: checkoutSession.subscription,
-            subscriptionStatus: "active",
+            subscriptionStatus,
             plan,
           }
         );
@@ -62,21 +73,7 @@ app.post(
       if (event.type === "customer.subscription.updated") {
         const subscription = event.data.object;
 
-        const priceId = subscription.items?.data?.[0]?.price?.id;
-
-        let plan = "basic";
-
-        if (priceId === STRIPE_BASIC_PRICE_ID) {
-          plan = "basic";
-        }
-
-        if (priceId === STRIPE_GROWTH_PRICE_ID) {
-          plan = "growth";
-        }
-
-        if (priceId === STRIPE_PRO_PRICE_ID) {
-          plan = "pro";
-        }
+        const plan = resolveStripePlanFromSubscription(subscription);
 
         await User.findOneAndUpdate(
           { stripeCustomerId: subscription.customer },
@@ -195,6 +192,23 @@ const ReviewEvent = mongoose.model("ReviewEvent", reviewEventSchema);
 
 
 /* ================= AUTH ================= */
+
+
+function resolveStripePlanFromSubscription(subscription) {
+  const metadataPlan = subscription.metadata?.plan;
+
+  if (metadataPlan === "basic" || metadataPlan === "growth" || metadataPlan === "pro") {
+    return metadataPlan;
+  }
+
+  const priceId = subscription.items?.data?.[0]?.price?.id;
+
+  if (priceId === STRIPE_PRO_PRICE_ID) return "pro";
+  if (priceId === STRIPE_GROWTH_PRICE_ID) return "growth";
+  if (priceId === STRIPE_BASIC_PRICE_ID) return "basic";
+
+  return "basic";
+}
 
 function hasAccess(user) {
   return (
