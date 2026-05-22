@@ -78,10 +78,6 @@ app.post(
           plan = "pro";
         }
 
-        if (priceId === STRIPE_GROWTH_PRICE_ID) {
-          plan = "growth";
-        }
-
         await User.findOneAndUpdate(
           { stripeCustomerId: subscription.customer },
           {

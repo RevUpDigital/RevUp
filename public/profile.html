@@ -612,15 +612,31 @@
         document.getElementById("currentEmail").innerText = user.email || "Not available";
         document.getElementById("email").value = user.email || "";
 
-        const subMap = {
-          active: "Pro Active",
-          trialing: "Trial",
-          canceled: "Cancelled",
-          none: "Free"
+        const planMap = {
+          basic: "Starter",
+          growth: "Growth",
+          pro: "Pro"
         };
 
-        document.getElementById("subscriptionStatus").innerText =
-          subMap[user.subscriptionStatus] || user.subscriptionStatus || "Free";
+        const planName = planMap[user.plan] || "Starter";
+
+        let subscriptionLabel = "Free";
+
+        if (user.isAdmin) {
+          subscriptionLabel = "Admin Access";
+        } else if (user.manualAccess && (!user.subscriptionStatus || user.subscriptionStatus === "none")) {
+          subscriptionLabel = "Manual Access";
+        } else if (user.subscriptionStatus === "trialing") {
+          subscriptionLabel = `${planName} Trial`;
+        } else if (user.subscriptionStatus === "active") {
+          subscriptionLabel = `${planName} Active`;
+        } else if (user.subscriptionStatus === "canceled") {
+          subscriptionLabel = `${planName} Cancelled`;
+        } else if (user.subscriptionStatus && user.subscriptionStatus !== "none") {
+          subscriptionLabel = `${planName} ${user.subscriptionStatus}`;
+        }
+
+        document.getElementById("subscriptionStatus").innerText = subscriptionLabel;
 
         document.getElementById("accessStatus").innerText =
           user.hasAccess ? "Active" : "No access";
