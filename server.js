@@ -210,6 +210,29 @@ function resolveStripePlanFromSubscription(subscription) {
   return "basic";
 }
 
+
+async function syncUserFromCheckoutSession(sessionId, userId) {
+  if (!sessionId || !userId) return;
+
+  const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
+
+  let plan = checkoutSession.metadata?.plan || "basic";
+  let subscriptionStatus = "active";
+
+  if (checkoutSession.subscription) {
+    const subscription = await stripe.subscriptions.retrieve(checkoutSession.subscription);
+    plan = resolveStripePlanFromSubscription(subscription);
+    subscriptionStatus = subscription.status || subscriptionStatus;
+  }
+
+  await User.findByIdAndUpdate(userId, {
+    stripeCustomerId: checkoutSession.customer,
+    stripeSubscriptionId: checkoutSession.subscription,
+    subscriptionStatus,
+    plan,
+  });
+}
+
 function hasAccess(user) {
   return (
     user.isAdmin ||
@@ -461,6 +484,12 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
 })
 
 app.get("/payment-success", requireAuth, async (req, res) => {
+  try {
+    await syncUserFromCheckoutSession(req.query.session_id, req.session.userId);
+  } catch (err) {
+    console.log("Payment success sync error:", err.message);
+  }
+
   res.redirect("/index.html");
 });
 
