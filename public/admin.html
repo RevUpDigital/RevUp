@@ -141,6 +141,187 @@
     }
 
   
+
+    /* ===== Admin business analytics upgrade ===== */
+    .admin-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      letter-spacing: -0.3px;
+    }
+
+    .business-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .business-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 14px 34px rgba(15,23,42,0.07);
+    }
+
+    .business-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .business-card-header h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      letter-spacing: -0.3px;
+    }
+
+    .business-subtitle {
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .score-pill {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .business-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .business-metric {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .business-metric strong {
+      display: block;
+      font-size: 22px;
+      color: #0f172a;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .business-metric span {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .business-visuals {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .funnel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .funnel-row {
+      display: grid;
+      gap: 6px;
+    }
+
+    .funnel-label {
+      display: flex;
+      justify-content: space-between;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .funnel-track {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .funnel-fill {
+      height: 100%;
+      min-width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+    }
+
+    .chart-box {
+      position: relative;
+      height: 160px;
+      width: 160px;
+      margin: 0 auto;
+    }
+
+    .business-note {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .empty-analytics {
+      padding: 18px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 16px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 850px) {
+      body {
+        padding: 18px;
+      }
+
+      .business-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .business-visuals {
+        grid-template-columns: 1fr;
+      }
+
+      .business-metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .business-metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+
+
     /* ===== Logo hover visibility fix ===== */
     .logo:hover,
     .nav .logo:hover {
@@ -151,6 +332,8 @@
 </head>
 
 <body>
+
+<div class="admin-wrap">
 
 <h1>RevUp Admin Dashboard</h1>
 
@@ -175,8 +358,28 @@
   <div id="businessStats"></div>
 </div>
 
+</div>
+
 <script>
 let chart;
+let businessCharts = [];
+
+function pct(part, whole) {
+  return whole ? ((part / whole) * 100) : 0;
+}
+
+function fmtPct(value) {
+  return `${Number(value || 0).toFixed(1)}%`;
+}
+
+function safe(value) {
+  return Number(value || 0);
+}
+
+function destroyBusinessCharts() {
+  businessCharts.forEach(chartInstance => chartInstance.destroy());
+  businessCharts = [];
+}
 
 async function loadStats(days = 0) {
   const res = await fetch(`/admin-stats?days=${days}`);
@@ -193,7 +396,7 @@ async function loadStats(days = 0) {
     <div class="stat"><strong>${g.feedback}</strong>Feedback</div>
   `;
 
-  // Chart
+  // Global chart
   const ctx = document.getElementById("statsChart");
 
   if (chart) chart.destroy();
@@ -210,32 +413,143 @@ async function loadStats(days = 0) {
           g.goodClicks,
           g.badClicks,
           g.feedback
-        ]
+        ],
+        backgroundColor: "#2563eb",
+        borderRadius: 10
       }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
     }
   });
 
-  // Business stats
-  const businesses = data.businesses;
+  // Business stats cards
+  destroyBusinessCharts();
+
+  const businesses = Object.values(data.businesses || {});
   let html = "";
 
-  Object.values(businesses).forEach(b => {
-    const clickRate = b.smsSent ? ((b.linkClicked / b.smsSent) * 100).toFixed(1) : 0;
-    const positiveRate = b.linkClicked ? ((b.goodClicks / b.linkClicked) * 100).toFixed(1) : 0;
+  if (!businesses.length) {
+    html = `<div class="empty-analytics">No business activity has been recorded yet.</div>`;
+  }
+
+  businesses.forEach((b, index) => {
+    const smsSent = safe(b.smsSent);
+    const linkClicked = safe(b.linkClicked);
+    const goodClicks = safe(b.goodClicks);
+    const badClicks = safe(b.badClicks);
+    const feedback = safe(b.feedback);
+
+    const clickRate = pct(linkClicked, smsSent);
+    const googleRate = pct(goodClicks, linkClicked);
+    const feedbackRate = pct(feedback, linkClicked);
+
+    const clickWidth = smsSent ? Math.max(clickRate, linkClicked ? 4 : 0) : 0;
+    const googleWidth = linkClicked ? Math.max(googleRate, goodClicks ? 4 : 0) : 0;
+    const badWidth = linkClicked ? Math.max(pct(badClicks, linkClicked), badClicks ? 4 : 0) : 0;
+    const feedbackWidth = linkClicked ? Math.max(feedbackRate, feedback ? 4 : 0) : 0;
 
     html += `
-      <div class="business">
-        <strong>${b.businessName}</strong><br>
-        SMS: ${b.smsSent} |
-        Clicks: ${b.linkClicked} (${clickRate}%) |
-        Google: ${b.goodClicks} (${positiveRate}%) |
-        Bad: ${b.badClicks} |
-        Feedback: ${b.feedback}
+      <div class="business-card">
+        <div class="business-card-header">
+          <div>
+            <h3>${b.businessName}</h3>
+            <div class="business-subtitle">Business-specific performance overview</div>
+          </div>
+          <div class="score-pill">${fmtPct(clickRate)} click rate</div>
+        </div>
+
+        <div class="business-metrics">
+          <div class="business-metric"><strong>${smsSent}</strong><span>SMS sent</span></div>
+          <div class="business-metric"><strong>${linkClicked}</strong><span>Link clicks</span></div>
+          <div class="business-metric"><strong>${goodClicks}</strong><span>Google redirects</span></div>
+          <div class="business-metric"><strong>${badClicks}</strong><span>Bad clicks</span></div>
+          <div class="business-metric"><strong>${feedback}</strong><span>Feedback forms</span></div>
+          <div class="business-metric"><strong>${fmtPct(googleRate)}</strong><span>Google conversion</span></div>
+        </div>
+
+        <div class="business-visuals">
+          <div class="funnel">
+            <div class="funnel-row">
+              <div class="funnel-label"><span>SMS → link clicks</span><span>${linkClicked}/${smsSent}</span></div>
+              <div class="funnel-track"><div class="funnel-fill" style="width:${clickWidth}%"></div></div>
+            </div>
+
+            <div class="funnel-row">
+              <div class="funnel-label"><span>Clicks → Google</span><span>${goodClicks}/${linkClicked}</span></div>
+              <div class="funnel-track"><div class="funnel-fill" style="width:${googleWidth}%"></div></div>
+            </div>
+
+            <div class="funnel-row">
+              <div class="funnel-label"><span>Clicks → bad experience</span><span>${badClicks}/${linkClicked}</span></div>
+              <div class="funnel-track"><div class="funnel-fill" style="width:${badWidth}%"></div></div>
+            </div>
+
+            <div class="funnel-row">
+              <div class="funnel-label"><span>Clicks → private feedback</span><span>${feedback}/${linkClicked}</span></div>
+              <div class="funnel-track"><div class="funnel-fill" style="width:${feedbackWidth}%"></div></div>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <canvas id="businessChart${index}"></canvas>
+          </div>
+        </div>
+
+        <div class="business-note">
+          ${goodClicks} customers were sent to Google from ${linkClicked} clicked review links.
+          ${badClicks || feedback ? ` ${badClicks} bad click(s) and ${feedback} private feedback form(s) were recorded.` : " No negative feedback events recorded."}
+        </div>
       </div>
     `;
   });
 
   document.getElementById("businessStats").innerHTML = html;
+
+  businesses.forEach((b, index) => {
+    const goodClicks = safe(b.goodClicks);
+    const badClicks = safe(b.badClicks);
+    const feedback = safe(b.feedback);
+    const linkClicked = safe(b.linkClicked);
+    const otherClicks = Math.max(linkClicked - goodClicks - badClicks - feedback, 0);
+
+    const canvas = document.getElementById(`businessChart${index}`);
+    if (!canvas) return;
+
+    const chartInstance = new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: ["Google", "Bad", "Feedback", "Other clicks"],
+        datasets: [{
+          data: [goodClicks, badClicks, feedback, otherClicks],
+          backgroundColor: ["#2563eb", "#ef4444", "#f59e0b", "#cbd5e1"],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: {
+              boxWidth: 10,
+              font: { size: 11 }
+            }
+          }
+        }
+      }
+    });
+
+    businessCharts.push(chartInstance);
+  });
 }
 
 // Load default (all time)
