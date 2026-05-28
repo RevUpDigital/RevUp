@@ -898,109 +898,456 @@
     }
 
   
-    /* ===== RevUp uniform blue navbar theme ===== */
-    .nav {
-      background: #2563eb !important;
-      border-bottom: 1px solid #1d4ed8 !important;
-      box-shadow: 0 10px 26px rgba(37,99,235,0.18) !important;
-      backdrop-filter: none !important;
+    /* ===== RevUp premium hero mockup update ===== */
+    .hero {
+      max-width: 1280px !important;
+      padding: 86px 30px 78px !important;
+      grid-template-columns: 0.95fr 1.15fr !important;
+      gap: 56px !important;
+      position: relative !important;
+      overflow: hidden !important;
     }
 
-    .nav .logo,
-    .logo {
-      color: #ffffff !important;
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 20px 0 auto auto;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(37,99,235,0.16), rgba(37,99,235,0.02) 62%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
     }
 
-    .nav a,
-    .nav-links a {
-      color: #ffffff !important;
+    .hero .badge {
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 900;
     }
 
-    .nav a:hover,
-    .nav-links a:hover,
-    .logo:hover,
-    .nav .logo:hover {
-      color: #dbeafe !important;
+    .hero h1 {
+      font-size: clamp(44px, 5vw, 72px) !important;
+      line-height: 0.98 !important;
+      letter-spacing: -2.6px !important;
+      margin-bottom: 24px !important;
     }
 
-    .nav a.nav-cta,
-    .nav-links a.nav-cta,
-    .nav-cta {
-      background: #ffffff !important;
-      color: #0f172a !important;
-      border: 1px solid rgba(255,255,255,0.65) !important;
-      box-shadow: 0 8px 18px rgba(15,23,42,0.12) !important;
+    .hero h1 .blue-word {
+      color: #2563eb;
+      display: inline-block;
     }
 
-    .nav a.nav-cta:hover,
-    .nav-links a.nav-cta:hover,
-    .nav-cta:hover {
-      background: #eff6ff !important;
-      color: #1d4ed8 !important;
+    .hero p {
+      max-width: 560px;
+      font-size: 20px !important;
+      color: #64748b;
     }
 
-    .avatar-btn {
-      background: #ffffff !important;
-      color: #2563eb !important;
-      border: 1px solid rgba(255,255,255,0.75) !important;
-      box-shadow: 0 8px 18px rgba(15,23,42,0.12) !important;
+    .hero-trust-row {
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 26px;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 700;
     }
 
-    .avatar-btn:hover {
-      background: #eff6ff !important;
-      color: #1d4ed8 !important;
+    .hero-trust-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .account-dropdown {
-      background: #ffffff !important;
-      color: #334155 !important;
+    .hero-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 900;
     }
 
-    .account-dropdown a,
-    .account-dropdown button,
-    .nav .account-dropdown a,
-    .nav .account-dropdown button {
-      color: #334155 !important;
-      background: #ffffff !important;
+    .hero-proof {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 42px;
+      color: #334155;
     }
 
-    .account-dropdown a:hover,
-    .account-dropdown button:hover,
-    .nav .account-dropdown a:hover,
-    .nav .account-dropdown button:hover {
-      background: #eef2ff !important;
-      color: #2563eb !important;
+    .proof-avatars {
+      display: flex;
+      align-items: center;
     }
 
-    .account-email {
-      color: #64748b !important;
+    .proof-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #dbeafe, #ffffff);
+      border: 2px solid white;
+      margin-left: -10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.10);
+      font-weight: 900;
+      color: #2563eb;
+    }
+
+    .proof-avatar:first-child {
+      margin-left: 0;
+    }
+
+    .proof-stars {
+      color: #facc15;
+      letter-spacing: 1px;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .hero-mockup {
+      position: relative;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dashboard-mockup {
+      width: min(650px, 100%);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #dbe3ef;
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 30px 90px rgba(15,23,42,0.18);
+      transform: perspective(1100px) rotateY(-8deg) rotateX(2deg);
+      position: relative;
+      z-index: 2;
+    }
+
+    .mockup-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .mockup-brand {
+      color: #2563eb;
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .mockup-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .mockup-stat {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 92px;
+    }
+
+    .mockup-stat strong {
+      display: block;
+      font-size: 25px;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .mockup-stat span {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .mockup-stat small {
+      display: block;
+      margin-top: 8px;
+      color: #16a34a;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .mockup-chart {
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 18px;
+      height: 185px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mockup-chart::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      background-image:
+        linear-gradient(#e2e8f0 1px, transparent 1px),
+        linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+      background-size: 100% 36px, 64px 100%;
+      opacity: 0.55;
+    }
+
+    .chart-line {
+      position: absolute;
+      left: 32px;
+      right: 32px;
+      bottom: 38px;
+      height: 85px;
+    }
+
+    .chart-line svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .mockup-reviews {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mockup-review {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+
+    .mockup-review strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .mockup-review .stars {
+      color: #facc15;
+      white-space: nowrap;
+    }
+
+    .phone-mockup {
+      position: absolute;
+      right: 18px;
+      bottom: 20px;
+      width: 205px;
+      background: #0f172a;
+      border-radius: 32px;
+      padding: 10px;
+      box-shadow: 0 26px 70px rgba(15,23,42,0.32);
+      z-index: 3;
+      transform: rotate(2deg);
+    }
+
+    .phone-screen {
+      background: #ffffff;
+      border-radius: 24px;
+      min-height: 370px;
+      padding: 18px 12px;
+      color: #0f172a;
+      font-size: 12px;
+    }
+
+    .phone-header {
+      text-align: center;
+      font-weight: 900;
+      margin-bottom: 18px;
+      color: #334155;
+    }
+
+    .sms-bubble {
+      background: #f1f5f9;
+      border-radius: 16px;
+      padding: 12px;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .sms-link {
+      color: #2563eb;
+      font-weight: 800;
+    }
+
+    .sms-done {
+      background: #2563eb;
+      color: white;
+      border-radius: 999px;
+      padding: 9px 12px;
+      display: inline-block;
+      float: right;
+      font-weight: 900;
+      margin-top: 8px;
+    }
+
+    .floating-card {
+      position: absolute;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 18px 50px rgba(15,23,42,0.14);
+      z-index: 4;
+      animation: floaty 4.6s ease-in-out infinite;
+    }
+
+    .float-sms {
+      top: 40px;
+      right: 0;
+      width: 160px;
+    }
+
+    .float-click {
+      top: 178px;
+      right: -18px;
+      width: 170px;
+      animation-delay: 0.6s;
+    }
+
+    .float-review {
+      left: 60px;
+      bottom: 0;
+      width: 245px;
+      animation-delay: 1.1s;
+    }
+
+    .floating-card strong {
+      display: block;
+      font-size: 27px;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+
+    .floating-card span {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .floating-card small {
+      display: block;
+      margin-top: 8px;
+      color: #16a34a;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .float-review strong {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .float-review .stars {
+      color: #facc15;
+      font-size: 18px;
+      letter-spacing: 1px;
+      margin-top: 8px;
+    }
+
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 1050px) {
+      .hero {
+        grid-template-columns: 1fr !important;
+      }
+
+      .hero-mockup {
+        min-height: 560px;
+      }
+
+      .float-click {
+        right: 12px;
+      }
     }
 
     @media (max-width: 700px) {
-      body.home-page .nav-links > a[href="#how"],
-      body.home-page .nav-links > a[href="#about"],
-      body.home-page .nav-links > a[href="#pricing"],
-      body.home-page .nav-links > a[href="#faq"] {
-        display: none !important;
+      .hero {
+        padding: 62px 20px 44px !important;
       }
 
-      body.home-page .nav-links {
-        gap: 12px !important;
+      .hero h1 {
+        font-size: 44px !important;
+        letter-spacing: -1.6px !important;
+      }
+
+      .hero p {
+        font-size: 17px !important;
+      }
+
+      .hero-mockup {
+        min-height: auto;
+        display: block;
+        margin-top: 22px;
+      }
+
+      .dashboard-mockup {
+        transform: none;
+        padding: 16px;
+      }
+
+      .mockup-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .phone-mockup,
+      .floating-card {
+        position: relative;
+        inset: auto;
+        width: 100%;
+        margin-top: 14px;
+        transform: none;
+      }
+
+      .phone-screen {
+        min-height: 260px;
+      }
+
+      .float-review {
+        width: 100%;
+      }
+
+      .hero-proof {
+        align-items: flex-start;
       }
     }
 
   </style>
 </head>
 
-<body class="home-page">
+<body>
 
   <div class="nav">
     <a href="/" class="logo">RevUp 🚀</a>
     <div class="nav-links" id="navLinks">
   <a href="#how">How it works</a>
-  <a href="#about">About Us</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQs</a>
+  <a href="#pricing">Pricing</a>
+  
+  <a href="#about">About Us</a><a href="#faq">FAQs</a>
 
   <span id="loggedOutNav">
     <a href="/index.html">Login</a>
@@ -1026,36 +1373,103 @@
 
   <div class="hero">
     <div>
-      <div class="badge">Google review growth for Australian businesses</div>
-      <h1>Turn happy customers into 5-star Google reviews.</h1>
+      <div class="badge">Automate. Request. Grow.</div>
+      <h1>Get more 5-star Google reviews. <span class="blue-word">Without the hassle.</span></h1>
       <p>
-        RevUp helps Australian local businesses send review requests by SMS, send happy customers to Google,
-        and collect private feedback from unhappy customers before it becomes a public problem.
+        RevUp helps Australian local businesses automate review requests, send happy customers to Google,
+        and grow their online reputation with less admin.
       </p>
 
       <div class="buttons">
-        <a href="/signup.html" class="btn btn-primary">Start free</a>
-        <a href="#pricing" class="btn btn-secondary">View pricing</a>
+        <a href="/signup.html" class="btn btn-primary">Start Free Trial →</a>
+        <a href="#how" class="btn btn-secondary">See How It Works</a>
+      </div>
+
+      <div class="hero-trust-row">
+        <span class="hero-trust-item"><span class="hero-check">✓</span>7 day free trial</span>
+        <span class="hero-trust-item"><span class="hero-check">✓</span>No lock-in contracts</span>
+        <span class="hero-trust-item"><span class="hero-check">✓</span>Cancel anytime</span>
+      </div>
+
+      <div class="hero-proof">
+        <div class="proof-avatars">
+          <span class="proof-avatar">T</span>
+          <span class="proof-avatar">C</span>
+          <span class="proof-avatar">S</span>
+        </div>
+        <div>
+          <div class="proof-stars">★★★★★</div>
+          <strong>Loved by local service businesses</strong>
+        </div>
       </div>
     </div>
 
-    <div class="hero-card">
-      <div class="phone-preview">
-        <strong>SMS Preview</strong>
-        <div class="message">
-          Hi Sarah, thanks for choosing Coastal Plumbing. Please leave a quick review:
-          revupdigital.com.au/review
+    <div class="hero-mockup">
+      <div class="dashboard-mockup">
+        <div class="mockup-topbar">
+          <span class="mockup-brand">RevUp</span>
+          <span>May 12 - May 18</span>
+        </div>
+
+        <div class="mockup-stats">
+          <div class="mockup-stat"><strong>127</strong><span>SMS Sent</span><small>+18%</small></div>
+          <div class="mockup-stat"><strong>92%</strong><span>Click Rate</span><small>+12%</small></div>
+          <div class="mockup-stat"><strong>38</strong><span>Reviews</span><small>+27%</small></div>
+          <div class="mockup-stat"><strong>4.9</strong><span>Avg. Rating</span><small>+0.4</small></div>
+        </div>
+
+        <div class="mockup-chart">
+          <div class="chart-line">
+            <svg viewBox="0 0 420 110" preserveAspectRatio="none">
+              <path d="M0,92 C45,82 62,76 94,70 C130,62 142,78 174,66 C215,50 222,55 260,38 C306,18 330,32 420,6"
+                    fill="none" stroke="#2563eb" stroke-width="5" stroke-linecap="round"/>
+              <path d="M0,92 C45,82 62,76 94,70 C130,62 142,78 174,66 C215,50 222,55 260,38 C306,18 330,32 420,6 L420,110 L0,110 Z"
+                    fill="rgba(37,99,235,0.12)"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="mockup-reviews">
+          <div class="mockup-review">
+            <div><strong>Sarah M.</strong>Great service and super easy to deal with.</div>
+            <div class="stars">★★★★★</div>
+          </div>
+          <div class="mockup-review">
+            <div><strong>James T.</strong>Highly recommend. Will be back again.</div>
+            <div class="stars">★★★★★</div>
+          </div>
         </div>
       </div>
 
-      <div class="mini-card">
-        <strong>⭐ Happy customer</strong>
-        Sent directly to your Google review page.
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-header">RevUp SMS</div>
+          <div class="sms-bubble">
+            Hi Sarah,<br>
+            Thanks for choosing Coastal Plumbing. If you have a moment, we’d love it if you could leave us a quick review.
+            <br><br>
+            <span class="sms-link">revupdigital.com.au/review</span>
+          </div>
+          <span class="sms-done">Done! ✅</span>
+        </div>
       </div>
 
-      <div class="mini-card">
-        <strong>💬 Unhappy customer</strong>
-        Leaves private feedback in your dashboard.
+      <div class="floating-card float-sms">
+        <strong>127</strong>
+        <span>SMS sent this week</span>
+        <small>+18% vs last 7 days</small>
+      </div>
+
+      <div class="floating-card float-click">
+        <strong>92%</strong>
+        <span>Click rate</span>
+        <small>+12% vs last 7 days</small>
+      </div>
+
+      <div class="floating-card float-review">
+        <strong>New 5-star review!</strong>
+        <span>Sarah M. just left a review</span>
+        <div class="stars">★★★★★</div>
       </div>
     </div>
   </div>
