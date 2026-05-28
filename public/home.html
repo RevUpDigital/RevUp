@@ -683,7 +683,6 @@
     @media (max-width: 700px) {
       body.logged-in .nav-links > a[href="#how"],
       body.logged-in .nav-links > a[href="#pricing"],
-      body.logged-in .nav-links > a[href="#about"],
       body.logged-in .nav-links > a[href="#faq"] {
         display: none !important;
       }
@@ -714,108 +713,6 @@
         display: inline-flex !important;
         align-items: center !important;
         line-height: 1 !important;
-      }
-    }
-
-
-
-    /* ===== About RevUp section ===== */
-    .about-section {
-      max-width: 1150px;
-      margin: auto;
-      padding: 70px 30px;
-    }
-
-    .about-card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 28px;
-      padding: 46px;
-      box-shadow: 0 20px 60px rgba(15,23,42,0.08);
-      display: grid;
-      grid-template-columns: 0.85fr 1.15fr;
-      gap: 42px;
-      align-items: start;
-    }
-
-    .about-kicker {
-      display: inline-block;
-      background: #dbeafe;
-      color: #1d4ed8;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 13px;
-      margin-bottom: 18px;
-    }
-
-    .about-card h2 {
-      font-size: 38px;
-      line-height: 1.08;
-      letter-spacing: -1px;
-      margin: 0 0 16px;
-      color: #0f172a;
-    }
-
-    .about-lead {
-      color: #64748b;
-      line-height: 1.65;
-      font-size: 17px;
-      margin: 0;
-    }
-
-    .about-copy {
-      display: grid;
-      gap: 16px;
-      color: #334155;
-      line-height: 1.75;
-      font-size: 16px;
-    }
-
-    .about-copy p {
-      margin: 0;
-      color: #334155;
-    }
-
-    .about-highlight {
-      margin-top: 4px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1d4ed8;
-      border-radius: 16px;
-      padding: 18px;
-      font-weight: 800;
-      line-height: 1.5;
-    }
-
-    @media (max-width: 850px) {
-      .about-card {
-        grid-template-columns: 1fr;
-        padding: 32px;
-      }
-
-      .about-card h2 {
-        font-size: 32px;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .about-section {
-        padding: 55px 20px;
-      }
-
-      .about-card {
-        padding: 26px;
-        border-radius: 22px;
-      }
-
-      .about-card h2 {
-        font-size: 28px;
-      }
-
-      .about-lead,
-      .about-copy {
-        font-size: 15px;
       }
     }
 
@@ -899,7 +796,6 @@
     <div class="nav-links" id="navLinks">
   <a href="#how">How it works</a>
   <a href="#pricing">Pricing</a>
-  <a href="#about">About Us</a>
   <a href="#faq">FAQs</a>
 
   <span id="loggedOutNav">
@@ -1024,33 +920,6 @@
       <div class="card">
         <h3>Better feedback</h3>
         <p>See what went wrong privately and improve the customer experience over time.</p>
-      </div>
-    </div>
-  </section>
-
-
-  <section id="about" class="about-section">
-    <div class="about-card">
-      <div>
-        <span class="about-kicker">About RevUp</span>
-        <h2>Helping local businesses turn great service into lasting reputation.</h2>
-        <p class="about-lead">Google reviews have become one of the biggest factors in how customers choose where to spend their money.</p>
-      </div>
-
-      <div class="about-copy">
-        <p>Whether it’s a tradie, clinic, or local service business, most people decide who to contact based on reputation and online ratings before they ever make a call.</p>
-
-        <p>RevUp was founded by two friends who noticed the same problem across local businesses everywhere — great work was being delivered, but not enough customers were turning that positive experience into online reviews.</p>
-
-        <p>So we built RevUp to fix it.</p>
-
-        <p>Our goal is simple: help service-based businesses grow their reputation without adding more admin or extra work to their day.</p>
-
-        <p>By automating review requests and simplifying customer feedback, RevUp helps businesses consistently generate more 5-star Google reviews while staying in control of the customer experience.</p>
-
-        <p>What started as a simple idea between two friends has grown into a platform designed to help local businesses compete and win online — without chasing customers or dealing with complicated systems.</p>
-
-        <div class="about-highlight">Today, RevUp is focused on one thing: helping hardworking businesses turn great service into lasting reputation.</div>
       </div>
     </div>
   </section>
