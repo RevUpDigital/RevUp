@@ -1428,166 +1428,216 @@
       }
     }
 
+
   
-    /* ===== RevUp hero tidy/laptop polish ===== */
-    .hero {
-      padding-top: 78px !important;
-    }
-
-    .hero-mockup {
-      min-height: 560px;
-      padding: 24px 0 44px;
-    }
-
+    /* ===== Hero dashboard + SMS card cleaner update ===== */
     .dashboard-mockup {
-      width: min(680px, 100%);
-      border-radius: 20px 20px 14px 14px;
-      padding: 20px;
-      transform: perspective(1200px) rotateY(-7deg) rotateX(2deg);
-      box-shadow: 0 30px 85px rgba(15,23,42,0.20);
-    }
-
-    .dashboard-mockup::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -24px;
-      transform: translateX(-50%);
-      width: 112%;
-      height: 24px;
-      background: linear-gradient(180deg, #dbe3ef, #94a3b8);
-      border-radius: 0 0 28px 28px;
-      box-shadow: 0 16px 35px rgba(15,23,42,0.18);
-      z-index: -1;
-    }
-
-    .dashboard-mockup::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -34px;
-      transform: translateX(-50%);
-      width: 46%;
-      height: 10px;
-      background: #cbd5e1;
-      border-radius: 0 0 18px 18px;
-      z-index: -2;
+      border-radius: 28px !important;
+      padding: 20px !important;
+      transform: none !important;
+      box-shadow: 0 30px 90px rgba(15,23,42,0.16) !important;
+      background: rgba(255,255,255,0.95) !important;
+      overflow: visible !important;
     }
 
     .mockup-topbar {
-      padding: 2px 4px 10px;
+      margin-bottom: 14px !important;
+      padding: 0 4px 10px !important;
     }
 
-    .mockup-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .mockup-brand::before {
-      content: "R";
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: #2563eb;
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
+    .mockup-topbar > span:last-child {
+      color: #64748b;
+      font-size: 14px;
       font-weight: 900;
     }
 
-    .mockup-chart {
-      height: 200px;
+    .mockup-shell {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 18px;
+      align-items: stretch;
     }
 
-    .phone-mockup {
-      right: 6px;
-      bottom: 28px;
-      width: 215px;
-      border-radius: 38px;
-      padding: 11px;
-      background: linear-gradient(145deg, #020617, #111827);
-      transform: rotate(2deg);
+    .mockup-sidebar {
+      border-right: 1px solid #e2e8f0;
+      padding: 8px 10px 8px 0;
+      display: grid;
+      align-content: start;
+      gap: 8px;
     }
 
-    .phone-mockup::before {
-      content: "";
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 72px;
-      height: 18px;
-      border-radius: 999px;
-      background: #020617;
-      z-index: 4;
-    }
-
-    .phone-screen {
-      min-height: 388px;
-      border-radius: 30px;
-      padding: 48px 13px 18px;
-      background: linear-gradient(180deg, #ffffff, #f8fafc);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .phone-header {
-      position: relative;
-      margin-bottom: 20px;
-      color: #475569;
+    .mockup-nav {
+      color: #64748b;
       font-size: 12px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 12px;
     }
 
-    .phone-header::before {
-      content: "";
-      width: 26px;
-      height: 26px;
-      display: block;
-      margin: 0 auto 6px;
-      border-radius: 999px;
-      background: #e2e8f0;
-      box-shadow: inset 0 0 0 8px #f8fafc;
+    .mockup-nav.active {
+      background: #eff6ff;
+      color: #2563eb;
     }
 
-    .sms-bubble {
-      background: #eef2ff;
+    .mockup-main {
+      min-width: 0;
+    }
+
+    .mockup-heading {
+      margin: 0 0 14px;
+      font-size: 20px;
+      letter-spacing: -0.4px;
       color: #0f172a;
-      border-radius: 18px 18px 18px 6px;
-      padding: 13px;
-      box-shadow: 0 8px 20px rgba(15,23,42,0.08);
-      font-size: 11.5px;
     }
 
-    .sms-link {
-      display: block;
-      margin-top: 4px;
-      word-break: break-word;
+    .mockup-stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     }
 
-    .sms-done {
-      margin-top: 16px;
-      box-shadow: 0 8px 18px rgba(37,99,235,0.24);
+    .mockup-chart {
+      height: 210px !important;
+    }
+
+    .mockup-review {
+      background: #ffffff !important;
     }
 
     .mockup-review strong {
-      font-size: 13px;
+      color: #0f172a;
     }
 
-    @media (max-width: 700px) {
-      .dashboard-mockup::before,
-      .dashboard-mockup::after {
+    .sms-card-mockup {
+      position: absolute;
+      right: -10px;
+      bottom: 20px;
+      width: 255px;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      box-shadow: 0 28px 75px rgba(15,23,42,0.18);
+      z-index: 4;
+      overflow: hidden;
+      animation: smsFloat 4.5s ease-in-out infinite;
+    }
+
+    .sms-card-top {
+      display: grid;
+      grid-template-columns: 24px 34px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      background: rgba(255,255,255,0.92);
+    }
+
+    .sms-back {
+      color: #2563eb;
+      font-size: 28px;
+      line-height: 1;
+      transform: translateY(-1px);
+    }
+
+    .sms-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: radial-gradient(circle at center, #e2e8f0 35%, #f8fafc 36%);
+      border: 1px solid #e2e8f0;
+    }
+
+    .sms-card-top strong {
+      display: block;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .sms-card-top span:not(.sms-back) {
+      display: block;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .sms-card-body {
+      padding: 18px 16px 14px;
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+    }
+
+    .sms-card-mockup .sms-bubble {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-radius: 18px 18px 18px 6px !important;
+      padding: 14px !important;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.06);
+      font-size: 13px !important;
+      line-height: 1.42 !important;
+      margin-bottom: 14px !important;
+    }
+
+    .sms-card-mockup .sms-link {
+      color: #2563eb !important;
+      font-weight: 900 !important;
+      word-break: break-word;
+    }
+
+    .sms-card-mockup .sms-done {
+      float: none !important;
+      display: inline-block !important;
+      margin-left: auto !important;
+      background: #2563eb !important;
+      color: white !important;
+      border-radius: 999px !important;
+      padding: 10px 14px !important;
+      font-weight: 900 !important;
+      box-shadow: 0 8px 18px rgba(37,99,235,0.24);
+      transform: translateX(118px);
+    }
+
+    .sms-delivered {
+      margin-top: 8px;
+      text-align: right;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    @keyframes smsFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 1050px) {
+      .sms-card-mockup {
+        right: 20px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .mockup-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .mockup-sidebar {
         display: none;
       }
 
-      .phone-mockup {
-        width: 100%;
+      .mockup-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
 
-      .phone-screen {
-        min-height: 280px;
+      .sms-card-mockup {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        margin-top: 18px;
+        animation: none;
+      }
+
+      .sms-card-mockup .sms-done {
+        transform: none;
+        float: right !important;
       }
     }
 
@@ -1663,8 +1713,22 @@
       <div class="dashboard-mockup">
         <div class="mockup-topbar">
           <span class="mockup-brand">RevUp</span>
-          <span>May 12 - May 18</span>
+          <span>Overview</span>
         </div>
+
+        <div class="mockup-shell">
+          <aside class="mockup-sidebar">
+            <div class="mockup-nav active">Overview</div>
+            <div class="mockup-nav">SMS Campaigns</div>
+            <div class="mockup-nav">Reviews</div>
+            <div class="mockup-nav">Customers</div>
+            <div class="mockup-nav">Analytics</div>
+            <div class="mockup-nav">Settings</div>
+          </aside>
+
+          <div class="mockup-main">
+            <h3 class="mockup-heading">Overview</h3>
+            
 
         <div class="mockup-stats">
           <div class="mockup-stat"><strong>127</strong><span>SMS Sent</span><small>+18%</small></div>
@@ -1999,4 +2063,6 @@
   checkLogin();
 </script>
 </body>
-</html>
+</html
+          </div>
+        </div>>
