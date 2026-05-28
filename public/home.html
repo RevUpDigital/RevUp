@@ -1148,34 +1148,6 @@
       white-space: nowrap;
     }
 
-    .phone-mockup {
-      position: absolute;
-      right: 18px;
-      bottom: 20px;
-      width: 205px;
-      background: #0f172a;
-      border-radius: 32px;
-      padding: 10px;
-      box-shadow: 0 26px 70px rgba(15,23,42,0.32);
-      z-index: 3;
-      transform: rotate(2deg);
-    }
-
-    .phone-screen {
-      background: #ffffff;
-      border-radius: 24px;
-      min-height: 370px;
-      padding: 18px 12px;
-      color: #0f172a;
-      font-size: 12px;
-    }
-
-    .phone-header {
-      text-align: center;
-      font-weight: 900;
-      margin-bottom: 18px;
-      color: #334155;
-    }
 
     .sms-bubble {
       background: #f1f5f9;
@@ -1314,7 +1286,6 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .phone-mockup,
       .floating-card {
         position: relative;
         inset: auto;
@@ -1323,9 +1294,6 @@
         transform: none;
       }
 
-      .phone-screen {
-        min-height: 260px;
-      }
 
       .float-review {
         width: 100%;
@@ -1447,32 +1415,6 @@
       box-shadow: 0 30px 85px rgba(15,23,42,0.20);
     }
 
-    .dashboard-mockup::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -24px;
-      transform: translateX(-50%);
-      width: 112%;
-      height: 24px;
-      background: linear-gradient(180deg, #dbe3ef, #94a3b8);
-      border-radius: 0 0 28px 28px;
-      box-shadow: 0 16px 35px rgba(15,23,42,0.18);
-      z-index: -1;
-    }
-
-    .dashboard-mockup::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -34px;
-      transform: translateX(-50%);
-      width: 46%;
-      height: 10px;
-      background: #cbd5e1;
-      border-radius: 0 0 18px 18px;
-      z-index: -2;
-    }
 
     .mockup-topbar {
       padding: 2px 4px 10px;
@@ -1502,55 +1444,6 @@
       height: 200px;
     }
 
-    .phone-mockup {
-      right: 6px;
-      bottom: 28px;
-      width: 215px;
-      border-radius: 38px;
-      padding: 11px;
-      background: linear-gradient(145deg, #020617, #111827);
-      transform: rotate(2deg);
-    }
-
-    .phone-mockup::before {
-      content: "";
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 72px;
-      height: 18px;
-      border-radius: 999px;
-      background: #020617;
-      z-index: 4;
-    }
-
-    .phone-screen {
-      min-height: 388px;
-      border-radius: 30px;
-      padding: 48px 13px 18px;
-      background: linear-gradient(180deg, #ffffff, #f8fafc);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .phone-header {
-      position: relative;
-      margin-bottom: 20px;
-      color: #475569;
-      font-size: 12px;
-    }
-
-    .phone-header::before {
-      content: "";
-      width: 26px;
-      height: 26px;
-      display: block;
-      margin: 0 auto 6px;
-      border-radius: 999px;
-      background: #e2e8f0;
-      box-shadow: inset 0 0 0 8px #f8fafc;
-    }
 
     .sms-bubble {
       background: #eef2ff;
@@ -1576,18 +1469,68 @@
       font-size: 13px;
     }
 
+
+  
+    /* ===== Floating SMS preview update ===== */
+    .floating-sms-preview {
+      position: absolute;
+      right: -28px;
+      bottom: 76px;
+      width: 260px;
+      background: #f1f5ff;
+      border: 1px solid rgba(37,99,235,0.10);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 22px 55px rgba(15,23,42,0.14);
+      z-index: 5;
+      animation: floatSmsPreview 4.2s ease-in-out infinite;
+    }
+
+    .floating-sms-preview p {
+      margin: 0 0 14px;
+      color: #0f172a;
+      font-size: 15px !important;
+      line-height: 1.45;
+      max-width: none;
+    }
+
+    .floating-sms-preview a {
+      color: #2563eb;
+      font-weight: 900;
+      text-decoration: none;
+      word-break: break-word;
+      font-size: 14px;
+    }
+
+    @keyframes floatSmsPreview {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .dashboard-mockup {
+      border-radius: 28px !important;
+      transform: perspective(1100px) rotateY(-8deg) rotateX(2deg) !important;
+    }
+
+    .hero-mockup {
+      overflow: visible !important;
+      padding-bottom: 0 !important;
+    }
+
+    @media (max-width: 1050px) {
+      .floating-sms-preview {
+        right: 18px;
+      }
+    }
+
     @media (max-width: 700px) {
-      .dashboard-mockup::before,
-      .dashboard-mockup::after {
-        display: none;
-      }
-
-      .phone-mockup {
+      .floating-sms-preview {
+        position: relative;
+        right: auto;
+        bottom: auto;
         width: 100%;
-      }
-
-      .phone-screen {
-        min-height: 280px;
+        margin-top: 16px;
+        animation: none;
       }
     }
 
@@ -1625,7 +1568,6 @@
   </span>
 </div>
   </div>
-
   <div class="hero">
     <div>
       <div class="badge">Automate. Request. Grow.</div>
@@ -1663,7 +1605,6 @@
       <div class="dashboard-mockup">
         <div class="mockup-topbar">
           <span class="mockup-brand">RevUp</span>
-          <span>May 12 - May 18</span>
         </div>
 
         <div class="mockup-stats">
@@ -1696,8 +1637,13 @@
         </div>
       </div>
 
+      <div class="floating-sms-preview">
+        <p>
+          Hi Sarah,<br>
+          Thanks for choosing Coastal Plumbing. If you have a moment, we'd love it if you could leave us a quick review.
+        </p>
+        <a href="#">revupdigital.com.au/review</a>
       </div>
-</div>
     </div>
   </div>
 
