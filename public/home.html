@@ -1534,6 +1534,27 @@
       }
     }
 
+
+
+    /* ===== Mobile-only hero visual cleanup ===== */
+    @media (max-width: 768px) {
+      .hero-mockup {
+        display: none !important;
+      }
+
+      .dashboard-mockup,
+      .floating-sms-preview {
+        display: none !important;
+      }
+
+      .hero {
+        grid-template-columns: 1fr !important;
+        padding-top: 54px !important;
+        padding-bottom: 44px !important;
+        gap: 0 !important;
+      }
+    }
+
   </style>
 </head>
 
