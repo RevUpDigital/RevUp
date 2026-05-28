@@ -1336,18 +1336,273 @@
       }
     }
 
+  
+    /* ===== RevUp uniform blue navbar theme ===== */
+    .nav {
+      background: #2563eb !important;
+      border-bottom: 1px solid #1d4ed8 !important;
+      box-shadow: 0 10px 26px rgba(37,99,235,0.18) !important;
+      backdrop-filter: none !important;
+    }
+
+    .nav .logo,
+    .logo {
+      color: #ffffff !important;
+    }
+
+    .nav a,
+    .nav-links a {
+      color: #ffffff !important;
+    }
+
+    .nav a:hover,
+    .nav-links a:hover,
+    .logo:hover,
+    .nav .logo:hover {
+      color: #dbeafe !important;
+    }
+
+    .nav a.nav-cta,
+    .nav-links a.nav-cta,
+    .nav-cta {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border: 1px solid rgba(255,255,255,0.65) !important;
+      box-shadow: 0 8px 18px rgba(15,23,42,0.12) !important;
+    }
+
+    .nav a.nav-cta:hover,
+    .nav-links a.nav-cta:hover,
+    .nav-cta:hover {
+      background: #eff6ff !important;
+      color: #1d4ed8 !important;
+    }
+
+    .avatar-btn {
+      background: #ffffff !important;
+      color: #2563eb !important;
+      border: 1px solid rgba(255,255,255,0.75) !important;
+      box-shadow: 0 8px 18px rgba(15,23,42,0.12) !important;
+    }
+
+    .avatar-btn:hover {
+      background: #eff6ff !important;
+      color: #1d4ed8 !important;
+    }
+
+    .account-dropdown {
+      background: #ffffff !important;
+      color: #334155 !important;
+    }
+
+    .account-dropdown a,
+    .account-dropdown button,
+    .nav .account-dropdown a,
+    .nav .account-dropdown button {
+      color: #334155 !important;
+      background: #ffffff !important;
+    }
+
+    .account-dropdown a:hover,
+    .account-dropdown button:hover,
+    .nav .account-dropdown a:hover,
+    .nav .account-dropdown button:hover {
+      background: #eef2ff !important;
+      color: #2563eb !important;
+    }
+
+    .account-email {
+      color: #64748b !important;
+    }
+
+    @media (max-width: 700px) {
+      body.home-page .nav-links > a[href="#how"],
+      body.home-page .nav-links > a[href="#about"],
+      body.home-page .nav-links > a[href="#pricing"],
+      body.home-page .nav-links > a[href="#faq"] {
+        display: none !important;
+      }
+
+      body.home-page .nav-links {
+        gap: 12px !important;
+      }
+    }
+
+  
+    /* ===== RevUp hero tidy/laptop polish ===== */
+    .hero {
+      padding-top: 78px !important;
+    }
+
+    .hero-mockup {
+      min-height: 560px;
+      padding: 24px 0 44px;
+    }
+
+    .dashboard-mockup {
+      width: min(680px, 100%);
+      border-radius: 20px 20px 14px 14px;
+      padding: 20px;
+      transform: perspective(1200px) rotateY(-7deg) rotateX(2deg);
+      box-shadow: 0 30px 85px rgba(15,23,42,0.20);
+    }
+
+    .dashboard-mockup::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -24px;
+      transform: translateX(-50%);
+      width: 112%;
+      height: 24px;
+      background: linear-gradient(180deg, #dbe3ef, #94a3b8);
+      border-radius: 0 0 28px 28px;
+      box-shadow: 0 16px 35px rgba(15,23,42,0.18);
+      z-index: -1;
+    }
+
+    .dashboard-mockup::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -34px;
+      transform: translateX(-50%);
+      width: 46%;
+      height: 10px;
+      background: #cbd5e1;
+      border-radius: 0 0 18px 18px;
+      z-index: -2;
+    }
+
+    .mockup-topbar {
+      padding: 2px 4px 10px;
+    }
+
+    .mockup-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mockup-brand::before {
+      content: "R";
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #2563eb;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .mockup-chart {
+      height: 200px;
+    }
+
+    .phone-mockup {
+      right: 6px;
+      bottom: 28px;
+      width: 215px;
+      border-radius: 38px;
+      padding: 11px;
+      background: linear-gradient(145deg, #020617, #111827);
+      transform: rotate(2deg);
+    }
+
+    .phone-mockup::before {
+      content: "";
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 72px;
+      height: 18px;
+      border-radius: 999px;
+      background: #020617;
+      z-index: 4;
+    }
+
+    .phone-screen {
+      min-height: 388px;
+      border-radius: 30px;
+      padding: 48px 13px 18px;
+      background: linear-gradient(180deg, #ffffff, #f8fafc);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phone-header {
+      position: relative;
+      margin-bottom: 20px;
+      color: #475569;
+      font-size: 12px;
+    }
+
+    .phone-header::before {
+      content: "";
+      width: 26px;
+      height: 26px;
+      display: block;
+      margin: 0 auto 6px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      box-shadow: inset 0 0 0 8px #f8fafc;
+    }
+
+    .sms-bubble {
+      background: #eef2ff;
+      color: #0f172a;
+      border-radius: 18px 18px 18px 6px;
+      padding: 13px;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.08);
+      font-size: 11.5px;
+    }
+
+    .sms-link {
+      display: block;
+      margin-top: 4px;
+      word-break: break-word;
+    }
+
+    .sms-done {
+      margin-top: 16px;
+      box-shadow: 0 8px 18px rgba(37,99,235,0.24);
+    }
+
+    .mockup-review strong {
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      .dashboard-mockup::before,
+      .dashboard-mockup::after {
+        display: none;
+      }
+
+      .phone-mockup {
+        width: 100%;
+      }
+
+      .phone-screen {
+        min-height: 280px;
+      }
+    }
+
   </style>
 </head>
 
-<body>
+<body class="home-page">
 
   <div class="nav">
     <a href="/" class="logo">RevUp 🚀</a>
     <div class="nav-links" id="navLinks">
   <a href="#how">How it works</a>
-  <a href="#pricing">Pricing</a>
-  
-  <a href="#about">About Us</a><a href="#faq">FAQs</a>
+  <a href="#about">About Us</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQs</a>
 
   <span id="loggedOutNav">
     <a href="/index.html">Login</a>
@@ -1431,11 +1686,11 @@
 
         <div class="mockup-reviews">
           <div class="mockup-review">
-            <div><strong>Sarah M.</strong>Great service and super easy to deal with.</div>
+            <div><strong>Cole</strong>Great service and super easy to deal with.</div>
             <div class="stars">★★★★★</div>
           </div>
           <div class="mockup-review">
-            <div><strong>James T.</strong>Highly recommend. Will be back again.</div>
+            <div><strong>Marcus</strong>Highly recommend. Will be back again.</div>
             <div class="stars">★★★★★</div>
           </div>
         </div>
@@ -1453,24 +1708,7 @@
           <span class="sms-done">Done! ✅</span>
         </div>
       </div>
-
-      <div class="floating-card float-sms">
-        <strong>127</strong>
-        <span>SMS sent this week</span>
-        <small>+18% vs last 7 days</small>
-      </div>
-
-      <div class="floating-card float-click">
-        <strong>92%</strong>
-        <span>Click rate</span>
-        <small>+12% vs last 7 days</small>
-      </div>
-
-      <div class="floating-card float-review">
-        <strong>New 5-star review!</strong>
-        <span>Sarah M. just left a review</span>
-        <div class="stars">★★★★★</div>
-      </div>
+</div>
     </div>
   </div>
 
