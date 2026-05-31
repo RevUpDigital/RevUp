@@ -1534,13 +1534,28 @@
       }
     }
 
+  
+    /* ===== RevUp navbar logo image ===== */
+    .logo img {
+      height: 42px;
+      width: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    @media (max-width: 700px) {
+      .logo img {
+        height: 36px;
+      }
+    }
+
   </style>
 </head>
 
 <body class="home-page">
 
   <div class="nav">
-    <a href="/" class="logo">RevUp 🚀</a>
+    <a href="/" class="logo"><img src="/revup-logo.png" alt="RevUp"></a>
     <div class="nav-links" id="navLinks">
   <a href="#how">How it works</a>
   <a href="#about">About Us</a>
@@ -1672,16 +1687,19 @@
 
     <div class="grid-3">
       <div class="card">
+        <div class="icon">📱</div>
         <h3>Send Review Requests Instantly</h3>
         <p>Send personalised SMS review requests in seconds. Simply enter your customer’s details and we’ll handle the rest.</p>
       </div>
 
       <div class="card">
+        <div class="icon">⭐</div>
         <h3>Turn Happy Customers Into 5-Star Reviews</h3>
         <p>Customers with a great experience are directed straight to your Google review page, helping you grow your reputation faster.</p>
       </div>
 
       <div class="card">
+        <div class="icon">🛡️</div>
         <h3>Resolve Issues Before They Go Public</h3>
         <p>Less satisfied customers can share private feedback first, giving you the opportunity to address concerns before they become public reviews.</p>
       </div>
@@ -1853,7 +1871,7 @@
     </div>
 
     <div style="font-size:14px; color:#64748b; line-height:1.6;">
-      support@revupdigital.com.au<br>
+      j.h.revupdigital@gmail.com<br>
       Jarod — +61413348172<br>
       Harry — +61432882039
     </div>

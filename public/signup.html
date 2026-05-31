@@ -491,6 +491,21 @@
       color: #dbeafe !important;
     }
 
+  
+    /* ===== RevUp navbar logo image ===== */
+    .logo img {
+      height: 42px;
+      width: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    @media (max-width: 700px) {
+      .logo img {
+        height: 36px;
+      }
+    }
+
   </style>
 
 </head>
@@ -498,7 +513,7 @@
 <body>
 
 <div class="nav">
-  <a href="/" class="logo">RevUp 🚀</a>
+  <a href="/" class="logo"><img src="/revup-logo.png" alt="RevUp"></a>
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/index.html" id="sendSmsLink">Send SMS</a>
