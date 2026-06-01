@@ -1555,30 +1555,21 @@
       }
     }
 
+  
 
-    /* ===== How RevUp works 4-step layout ===== */
-    .how-steps {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 22px;
+    /* ===== RevUp navbar logo image ===== */
+    .logo img {
+      height: 42px;
+      width: auto;
+      display: block;
+      object-fit: contain;
     }
 
-    .how-steps .card h3 {
-      line-height: 1.25;
-    }
-
-    @media (max-width: 1050px) {
-      .how-steps {
-        grid-template-columns: repeat(2, 1fr);
+    @media (max-width: 700px) {
+      .logo img {
+        height: 36px;
       }
     }
-
-    @media (max-width: 650px) {
-      .how-steps {
-        grid-template-columns: 1fr;
-      }
-    }
-
 
   </style>
 </head>
@@ -1586,7 +1577,7 @@
 <body class="home-page">
 
   <div class="nav">
-    <a href="/" class="logo">RevUp 🚀</a>
+    <a href="/" class="logo"><img src="/revup-logo.png" alt="RevUp"></a>
     <div class="nav-links" id="navLinks">
   <a href="#how">How it works</a>
   <a href="#about">About Us</a>
@@ -1716,25 +1707,23 @@
       <p>A simple review funnel that helps you ask at the right time and protect your reputation.</p>
     </div>
 
-    <div class="how-steps">
+    <div class="grid-3">
       <div class="card">
-        <h3>1. Add your customer</h3>
-        <p>After finishing a job, you simply enter your customer’s name and mobile number.</p>
+        <div class="icon">📱</div>
+        <h3>Send Review Requests Instantly</h3>
+        <p>Send personalised SMS review requests in seconds. Simply enter your customer’s details and we’ll handle the rest.</p>
       </div>
 
       <div class="card">
-        <h3>2. We send a message for you</h3>
-        <p>RevUp automatically sends a friendly SMS from your business thanking them for their service.</p>
+        <div class="icon">⭐</div>
+        <h3>Turn Happy Customers Into 5-Star Reviews</h3>
+        <p>Customers with a great experience are directed straight to your Google review page, helping you grow your reputation faster.</p>
       </div>
 
       <div class="card">
-        <h3>3. Customer leaves feedback</h3>
-        <p>Your customer taps the link and is asked: great experience → they’re taken to your Google review page. Not happy → they leave private feedback instead.</p>
-      </div>
-
-      <div class="card">
-        <h3>4. You get more reviews</h3>
-        <p>Happy customers leave 5-star Google reviews, while unhappy customers are handled privately so you can fix issues before they become public complaints.</p>
+        <div class="icon">🛡️</div>
+        <h3>Resolve Issues Before They Go Public</h3>
+        <p>Less satisfied customers can share private feedback first, giving you the opportunity to address concerns before they become public reviews.</p>
       </div>
     </div>
   </section>
@@ -1904,7 +1893,7 @@
     </div>
 
     <div style="font-size:14px; color:#64748b; line-height:1.6;">
-      support@revupdigital.com.au<br>
+      j.h.revupdigital@gmail.com<br>
       Jarod — +61413348172<br>
       Harry — +61432882039
     </div>
