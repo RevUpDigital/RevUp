@@ -494,17 +494,146 @@
   
     /* ===== RevUp navbar logo image ===== */
     .logo img {
-      height: 48px !important;
-      width: auto !important;
-      display: block !important;
-      object-fit: contain !important;
+      height: 42px;
+      width: auto;
+      display: block;
+      object-fit: contain;
     }
 
     @media (max-width: 700px) {
       .logo img {
-        height: 42px !important;
+        height: 36px;
       }
     }
+
+
+    /* ===== Business settings help popups ===== */
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+
+    .field-label label {
+      margin: 0 !important;
+    }
+
+    .info-icon {
+      width: 20px !important;
+      height: 20px !important;
+      min-width: 20px !important;
+      min-height: 20px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border-radius: 999px !important;
+      border: none !important;
+      background: #2563eb !important;
+      color: #ffffff !important;
+      font-size: 12px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      box-shadow: none !important;
+      flex-shrink: 0 !important;
+    }
+
+    .info-icon:hover {
+      background: #1d4ed8 !important;
+    }
+
+    .sms-note {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .sms-note strong {
+      color: #0f172a;
+    }
+
+    .info-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      z-index: 9999;
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .info-modal-overlay.show {
+      display: flex;
+    }
+
+    .info-modal {
+      width: 100%;
+      max-width: 430px;
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 24px 70px rgba(15,23,42,0.26);
+      padding: 24px;
+      color: #0f172a;
+    }
+
+    .info-modal h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      letter-spacing: -0.3px;
+    }
+
+    .info-modal p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .info-modal code {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      padding: 2px 5px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 800;
+    }
+
+    .info-modal-actions {
+      margin-top: 18px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .info-modal-close {
+      width: auto !important;
+      padding: 10px 16px !important;
+      margin: 0 !important;
+      border-radius: 12px !important;
+      font-size: 14px !important;
+    }
+
+    @media (max-width: 520px) {
+      .info-modal-overlay {
+        align-items: flex-end;
+        padding: 14px;
+      }
+
+      .info-modal {
+        max-width: none;
+        border-radius: 20px;
+        padding: 22px;
+      }
+    }
+
 
   </style>
 
@@ -539,17 +668,32 @@
 <h1 id="title">Create your business</h1>
 <p id="subtitle">Set up your business profile, add your Google review link, and start sending SMS review requests.</p>
 
-<label>Business name</label>
+<div class="field-label">
+  <label for="businessName">Business name</label>
+  <button type="button" class="info-icon" onclick="openInfoModal('businessName')" aria-label="Business name help">?</button>
+</div>
 <input id="businessName" />
 
-<label>Business email</label>
+<div class="field-label">
+  <label for="email">Business email</label>
+  <button type="button" class="info-icon" onclick="openInfoModal('businessEmail')" aria-label="Business email help">?</button>
+</div>
 <input id="email" />
 
-<label>Google review link</label>
+<div class="field-label">
+  <label for="googleReviewLink">Google review link</label>
+  <button type="button" class="info-icon" onclick="openInfoModal('googleReviewLink')" aria-label="Google review link help">?</button>
+</div>
 <input id="googleReviewLink" />
 
-<label>SMS message</label>
+<div class="field-label">
+  <label for="smsMessage">SMS message</label>
+  <button type="button" class="info-icon" onclick="openInfoModal('smsMessage')" aria-label="SMS message help">?</button>
+</div>
 <textarea id="smsMessage"></textarea>
+<div class="sms-note">
+  Important: do not remove <strong>{{reviewLink}}</strong> or customers will not receive the link to leave feedback or a Google review.
+</div>
 
 <button id="submitBtn" onclick="handleSubmit()">Create Business</button>
 
@@ -559,9 +703,75 @@
   </div>
 </div>
 
+
+<div class="info-modal-overlay" id="infoModalOverlay" onclick="closeInfoModal(event)">
+  <div class="info-modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle" onclick="event.stopPropagation()">
+    <h3 id="infoModalTitle">Help</h3>
+    <p id="infoModalText"></p>
+    <div class="info-modal-actions">
+      <button type="button" class="info-modal-close" onclick="closeInfoModal()">Got it</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let isEditMode = false;
 let existingSlug = null;
+
+
+const infoModalContent = {
+  businessName: {
+    title: "Business name",
+    text: "Enter the business name exactly how you want it shown to customers in SMS messages and review requests."
+  },
+  businessEmail: {
+    title: "Business email",
+    text: "Private customer feedback will be sent to this email address. Use the best email for the business owner, manager, reception team, or whoever should receive customer feedback."
+  },
+  googleReviewLink: {
+    title: "Google review link",
+    html: "This is the link customers will be sent to when they select a positive experience.<br><br>To get it, open your Google Business Profile and choose <strong>Ask for reviews</strong> or <strong>Share review form</strong>, then copy and paste that review link here."
+  },
+  smsMessage: {
+    title: "SMS message",
+    html: "This is the message your customer receives by SMS.<br><br>Keep the placeholders exactly as shown:<br><br><code>{{name}}</code> = customer name<br><code>{{businessName}}</code> = your business name<br><code>{{reviewLink}}</code> = the review link RevUp generates automatically<br><br>RevUp replaces these automatically when the SMS is sent."
+  }
+};
+
+function openInfoModal(key) {
+  const content = infoModalContent[key];
+  if (!content) return;
+
+  const overlay = document.getElementById("infoModalOverlay");
+  const title = document.getElementById("infoModalTitle");
+  const text = document.getElementById("infoModalText");
+
+  title.innerText = content.title;
+
+  if (content.html) {
+    text.innerHTML = content.html;
+  } else {
+    text.innerText = content.text;
+  }
+
+  overlay.classList.add("show");
+}
+
+function closeInfoModal(event) {
+  if (event && event.target.id !== "infoModalOverlay") return;
+
+  const overlay = document.getElementById("infoModalOverlay");
+  if (overlay) {
+    overlay.classList.remove("show");
+  }
+}
+
+window.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    closeInfoModal();
+  }
+});
+
 
 async function init() {
   const res = await fetch("/me");
