@@ -506,7 +506,7 @@ app.post("/create-checkout-session", requireAuth, async (req, res) => {
         smsLimit: String(selectedPlan.smsLimit),
       },
       subscription_data: {
-        trial_period_days: 7,
+        trial_period_days: 14,
         metadata: {
           plan: selectedPlanKey,
           planName: selectedPlan.name,
